@@ -4,6 +4,32 @@
 
 An autonomous agent workspace. The agent plans its own work daily, executes tasks on a regular schedule, and evolves its understanding of what to build over time.
 
+## How It Works
+
+```mermaid
+flowchart TD
+    goals["📋 goals.md\n(your north star)"]
+    notes["📝 notes.md\n(your ideas)"]
+    tasks["📦 tasks.json\n(task queue)"]
+    progress["✅ progress.txt\n(completed work)"]
+    memory["🧠 memory/YYYY-MM-DD.md\n(daily summaries)"]
+    projects["💻 projects/\n(built output)"]
+
+    goals --> plan["plan-tick.sh\n⏰ daily at 7am"]
+    notes --> plan
+    memory --> plan
+    plan -->|"generates 1-5 tasks"| tasks
+    plan -->|"writes morning summary"| memory
+
+    tasks --> exec["cron-tick.sh\n⏰ every hour (adjustable)"]
+    exec -->|"builds & commits"| projects
+    exec -->|"logs completion"| progress
+
+    you["👤 You"] -->|"edit"| goals
+    you -->|"drop ideas"| notes
+    you -->|"queue directly"| tasks
+```
+
 ## Getting Started
 
 1. **Clone the repo** and `cd` into it.
@@ -36,12 +62,6 @@ An autonomous agent workspace. The agent plans its own work daily, executes task
    ```bash
    ./scripts/start-telegram.sh
    ```
-
-## How It Works
-
-1. **7am daily** - planning agent reads `goals.md`, `notes.md`, and history → generates and queues 1–5 new tasks → writes a morning summary to `memory/YYYY-MM-DD.md`
-2. **Every hour** - execution agent picks the first incomplete task from `tasks.json` → builds it → commits
-3. **You** can steer it by editing `goals.md`, dropping ideas into `notes.md`, or adding tasks directly to `tasks.json`
 
 ## Files
 
