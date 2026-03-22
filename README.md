@@ -93,7 +93,7 @@ Or add directly to `tasks.json`:
 
 ```bash
 # Run one execution tick now
-./scripts/task-once.sh
+./scripts/task-tick.sh
 
 # Run the planning tick now
 ./scripts/plan-tick.sh
