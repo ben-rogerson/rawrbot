@@ -1,0 +1,26 @@
+# Logs
+telegram.log
+cron.log
+
+# Personal files
+goals.md
+notes.md
+tasks.json
+
+# Memory
+memory/
+MEMORY.md
+progress.txt
+
+# Projects
+projects/
+docs/
+
+# Environment variables
+.env
+env.example
+
+# Claude stuff
+.claude/settings.local.json
+.claude/skills/*
+!.claude/skills/add-task/
