@@ -112,6 +112,16 @@ To view or edit:
 crontab -e
 ```
 
+### Alternative: `/loop` in Claude Code
+
+Instead of system cron, you can drive the agent from within a Claude Code session using the `/loop` command:
+
+```
+/loop 1h ./scripts/task-tick.sh
+```
+
+This runs the execution tick every hour for as long as the session is open - no crontab required. Useful for short bursts of supervised work or when testing changes to the tick scripts.
+
 ## Token-Saving Strategies
 
 The agent is designed to keep each Claude invocation cheap:
