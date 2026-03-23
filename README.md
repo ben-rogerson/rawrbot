@@ -34,31 +34,11 @@ flowchart TD
 
 1. **Clone the repo** and `cd` into it.
 
-2. **Configure your workspace path:**
+2. **Install [Claude Code](https://github.com/anthropics/claude-code)** - the scripts invoke `claude` directly.
 
-   ```bash
-   cp .env.example .env
-   # Edit .env and set WORKDIR to the absolute path of this repo
-   ```
+3. **Run `/setup`** in a Claude Code session - it will create all required files with examples and wire up the cron jobs.
 
-3. **Install [Claude Code](https://github.com/anthropics/claude-code)** - the scripts invoke `claude` directly.
-
-4. **Set up cron jobs:**
-
-   ```bash
-   crontab -e
-   ```
-
-   Add:
-
-   ```
-   0 * * * * /path/to/scripts/cron-tick.sh >> /path/to/cron.log 2>&1
-   0 7 * * * /path/to/scripts/plan-tick.sh >> /path/to/cron.log 2>&1
-   ```
-
-5. **Create `goals.md`** - describe what you want the agent to build. See the [Files](#files) section below.
-
-6. _(Optional)_ **Start the Telegram listener** for remote task queueing:
+4. _(Optional)_ **Start the Telegram listener** for remote task queueing:
    ```bash
    ./scripts/start-telegram.sh
    ```
