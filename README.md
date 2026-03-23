@@ -111,3 +111,15 @@ The agent is designed to keep each Claude invocation cheap:
 - **Single-shot invocations** - both cron scripts use `claude -p` (non-interactive), so no conversation history accumulates across turns
 - **Concise progress logging** - agents are explicitly instructed to "sacrifice grammar for concision" in `progress.txt`
 - **MEMORY.md as index** - only the summary index is injected per tick; full memory files are read on demand, not always loaded
+
+## Keeping Your Mac Awake
+
+Install [Caffeine](https://www.caffeine.app/) with `brew install --cask caffeine`.
+
+If running the agent via `/loop` or cron during an extended session, prevent your Mac from sleeping with:
+
+```bash
+caffeinate
+```
+
+Also ensure your Mac is plugged in and not on battery.
