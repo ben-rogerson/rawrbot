@@ -95,7 +95,7 @@ Picks the highest-priority pending task from `tasks.json` and executes it.
 Instead of system cron, you can drive the agent from within a Claude Code session using the `/loop` command:
 
 ```
-/loop 1h ./scripts/task-tick.sh
+/loop 1h /task-tick
 ```
 
 This runs the execution tick every hour for as long as the session is open - no crontab required. Useful for short bursts of supervised work or when testing changes to the tick scripts.
