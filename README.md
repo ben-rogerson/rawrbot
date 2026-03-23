@@ -72,45 +72,23 @@ build a CLI tool that summarises my git activity for the week
 
 Claude will parse your input, preview the entries, and ask for confirmation before writing.
 
-Or add directly to `tasks.json`:
-
-```json
-{
-  "id": "my-task-id",
-  "category": "feature",
-  "description": "What you want built",
-  "steps": ["step 1", "step 2"],
-  "passes": false,
-  "priority": 1,
-  "addedBy": "user",
-  "addedAt": "2026-03-22T00:00:00Z"
-}
-```
-
 **Update priorities or constraints** - edit `goals.md` directly. The agent reads it on every planning tick and respects changes immediately.
 
-**Trigger a manual run**:
+**Trigger a planning tick manually** - use the `/plan-tick` skill:
 
-```bash
-# Run one execution tick now
-./scripts/task-tick.sh
-
-# Run the planning tick now
-./scripts/plan-tick.sh
+```
+/plan-tick
 ```
 
-## Cron Schedule
+Runs the morning planning agent on demand - reads `goals.md`, `notes.md`, and recent memory, then generates new tasks.
 
-| Schedule     | Script         | What it does                                 |
-| ------------ | -------------- | -------------------------------------------- |
-| Every hour   | `cron-tick.sh` | Executes the next pending task               |
-| Daily at 7am | `plan-tick.sh` | Generates new tasks + writes morning summary |
+**Trigger an execution tick manually** - use the `/task-tick` skill:
 
-To view or edit:
-
-```bash
-crontab -e
 ```
+/task-tick
+```
+
+Picks the highest-priority pending task from `tasks.json` and executes it.
 
 ### Alternative: `/loop` in Claude Code
 
@@ -133,21 +111,3 @@ The agent is designed to keep each Claude invocation cheap:
 - **Single-shot invocations** - both cron scripts use `claude -p` (non-interactive), so no conversation history accumulates across turns
 - **Concise progress logging** - agents are explicitly instructed to "sacrifice grammar for concision" in `progress.txt`
 - **MEMORY.md as index** - only the summary index is injected per tick; full memory files are read on demand, not always loaded
-
-## Task Schema
-
-```json
-{
-  "id": "unique-slug",
-  "description": "What to build or do",
-  "steps": ["step 1", "step 2"],
-  "category": "agent-generated",
-  "reasoning": "Why this was chosen (agent-generated tasks only)",
-  "passes": false,
-  "priority": 1,
-  "addedBy": "agent | user",
-  "addedAt": "2026-03-22T07:00:00Z"
-}
-```
-
-`passes: false` = pending. The agent sets it to `true` when complete.
