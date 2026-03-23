@@ -6,6 +6,7 @@ cron.log
 goals.md
 notes.md
 tasks.json
+.githooks/
 
 # Memory
 memory/
