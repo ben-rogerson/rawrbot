@@ -35,7 +35,8 @@ $(tail -50 "${WORKDIR}/progress.txt" 2>/dev/null || echo "(empty)")
 3. Execute the task. New projects go in projects/<name>/.
 4. Run relevant checks (typecheck, tests) if the task involves code.
 5. Mark the task passes: true in tasks.json.
-5a. If the task created a new project directory, write a README.md in the project root using this exact structure:
+5a. If the task created a new project directory, initialise a git repo in it (git init && git add -A && git commit -m "Initial commit") so the project has its own version control. projects/ is gitignored from the main repo, so each project must track itself.
+5b. If the task created a new project directory, write a README.md in the project root using this exact structure:
     - One or two sentences at the top: what it is and why it was built. Frame it as personal interest — curiosity, a problem to solve, something to learn. Never mention employers or portfolios.
     - ## What it does — bullet points only
     - ## How it works — a Mermaid diagram explaining key logic or data flow. Use flowchart TD for request/data flows, sequenceDiagram for multi-party interactions, or stateDiagram-v2 for state machines.
@@ -47,7 +48,7 @@ $(tail -50 "${WORKDIR}/progress.txt" 2>/dev/null || echo "(empty)")
 6. Append to progress.txt: task completed, key decisions, files changed, blockers. Be concise. Sacrifice grammar for concision.
 7. Append to ${MEMORY_FILE}: session summary, key decisions, what to carry forward tomorrow.
 8. If any long-term facts emerged (new project, key decision, user preference), update MEMORY.md.
-9. Commit all changes with a descriptive message.
+9. Commit changes: for the main repo (tasks.json, progress.txt, memory, goals.md), commit with a descriptive message. For project repos under projects/<name>/, commit within that project's own git repo. If the project has no .git directory, run git init first.
 Important: Do NOT modify goals.md under any circumstances. goals.md is managed exclusively by the planning agent.
 If all tasks have passes: true, output <promise>COMPLETE</promise> and stop.
 EOF
