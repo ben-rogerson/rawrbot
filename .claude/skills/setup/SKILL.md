@@ -1,11 +1,11 @@
 ---
 name: setup
-description: Use when setting up this autonomous agent workspace for the first time - creates missing config files, initialises the task queue, and wires up cron jobs.
+description: Use when setting up this autonomous agent workspace for the first time - creates missing config files, initialises the task queue, and installs launchd agents.
 ---
 
 # Setup
 
-Walk the user through first-time setup of this workspace. Create each missing file with example content, then configure the cron schedule.
+Walk the user through first-time setup of this workspace. Create each missing file with example content, then install the launchd agents.
 
 ## Steps
 
@@ -105,20 +105,21 @@ If missing, create the directory with a `.gitkeep` so it's tracked:
 mkdir -p memory && touch memory/.gitkeep
 ```
 
-### 9. Set up cron jobs
+### 9. Install launchd agents
 
-Ask the user: "Would you like me to add the cron jobs now?"
+Ask the user: "Would you like me to install the launchd agents now?"
 
-If yes, read the current crontab, then show the two lines to add and ask for confirmation before writing:
+If yes, run:
 
+```bash
+./scripts/launchd.sh install
 ```
-0 * * * * /absolute/path/to/scripts/cron-tick.sh >> /absolute/path/to/cron.log 2>&1
-0 7 * * * /absolute/path/to/scripts/plan-tick.sh >> /absolute/path/to/cron.log 2>&1
-```
 
-Replace `/absolute/path/to` with the `WORKDIR` value from `.env`. Write the updated crontab with `crontab -`.
+Then run `./scripts/launchd.sh status` to confirm they loaded.
 
-If no, show the two lines and tell the user to add them manually with `crontab -e`.
+If no, tell the user they can install later with `./scripts/launchd.sh install`.
+
+The plist files in `launchd/` define the schedules. The user can edit them and re-run `./scripts/launchd.sh install` to apply changes.
 
 ### 10. Summary
 

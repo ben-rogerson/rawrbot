@@ -5,7 +5,7 @@ description: Use when the user wants to manually run the task execution agent - 
 
 # Task Tick
 
-Run the task execution agent exactly as the cron job would.
+Run the task execution agent exactly as the launchd agent would.
 
 ## Command
 

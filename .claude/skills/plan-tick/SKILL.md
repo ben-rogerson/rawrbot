@@ -5,7 +5,7 @@ description: Use when the user wants to manually run the morning planning agent 
 
 # Plan Tick
 
-Run the planning agent exactly as the cron job would.
+Run the planning agent exactly as the launchd agent would.
 
 ## Command
 

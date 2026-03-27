@@ -21,7 +21,7 @@ flowchart TD
     plan -->|"generates 1-5 tasks"| tasks
     plan -->|"writes morning summary"| memory
 
-    tasks --> exec["cron-tick.sh\n⏰ every hour (adjustable)"]
+    tasks --> exec["task-tick.sh\n⏰ scheduled via launchd"]
     exec -->|"builds & commits"| projects
     exec -->|"logs completion"| progress
 
@@ -36,7 +36,7 @@ flowchart TD
 
 2. **Install [Claude Code](https://github.com/anthropics/claude-code)** - the scripts invoke `claude` directly.
 
-3. **Run `/setup`** in a Claude Code session - it will create all required files with examples and wire up the cron jobs.
+3. **Run `/setup`** in a Claude Code session - it will create all required files with examples and install the launchd agents.
 
 4. _(Optional)_ **Start the Telegram listener** for remote task queueing:
    ```bash
@@ -49,12 +49,13 @@ flowchart TD
 | ---------------------- | ------------------------------------------------------------------------------------------- |
 | `goals.md`             | Agent's north star - what to build, priorities, constraints. Edit freely.                   |
 | `notes.md`             | Your scratchpad - drop ideas here, the agent converts actionable ones to tasks each morning |
-| `tasks.json`           | Task queue - appended to by the planner, executed by the cron agent                         |
+| `tasks.json`           | Task queue - appended to by the planner, executed by the task agent                         |
 | `progress.txt`         | Log of completed work                                                                       |
 | `MEMORY.md`            | Long-term agent memory                                                                      |
 | `memory/YYYY-MM-DD.md` | Daily notes - morning plan + session summaries                                              |
 | `projects/`            | Agent-created projects live here                                                            |
-| `cron.log`             | Output from both cron scripts                                                               |
+| `launchd/`             | Plist files for launchd scheduling                                                          |
+| `cron.log`             | Output from scheduled scripts                                                               |
 
 ## Steering the Agent
 
@@ -92,13 +93,23 @@ Picks the highest-priority pending task from `tasks.json` and executes it.
 
 ### Alternative: `/loop` in Claude Code
 
-Instead of system cron, you can drive the agent from within a Claude Code session using the `/loop` command:
+Instead of launchd, you can drive the agent from within a Claude Code session using the `/loop` command:
 
 ```
 /loop 1h /task-tick
 ```
 
-This runs the execution tick every hour for as long as the session is open - no crontab required. Useful for short bursts of supervised work or when testing changes to the tick scripts.
+This runs the execution tick every hour for as long as the session is open - no launchd required. Useful for short bursts of supervised work or when testing changes to the tick scripts.
+
+### Managing Schedules
+
+Schedules are managed via launchd (macOS Launch Agents). Plist files live in `launchd/` and are symlinked to `~/Library/LaunchAgents/` on install.
+
+```bash
+./scripts/launchd.sh install    # Install and load all agents
+./scripts/launchd.sh uninstall  # Unload and remove all agents
+./scripts/launchd.sh status     # Check which agents are loaded
+```
 
 ## Token-Saving Strategies
 
@@ -119,7 +130,7 @@ Install [Caffeine](https://www.caffeine.app/) with `brew install --cask caffeine
 If running the agent via `/loop` or cron during an extended session, prevent your Mac from sleeping with:
 
 ```bash
-caffeinate
+caffeinate -s
 ```
 
 Also ensure your Mac is plugged in and not on battery.
