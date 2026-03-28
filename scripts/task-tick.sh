@@ -86,7 +86,12 @@ with open(prompt_file, "w") as f:
 PYEOF
 
 cd "${WORKDIR}"
-claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
+OUTPUT=$(claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")")
+
+# Only notify if a task was actually executed (not when all tasks are already complete)
+if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then
+  exit 0
+fi
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
   MSG=$(grep -v '^$' "${WORKDIR}/progress.txt" | tail -1)
