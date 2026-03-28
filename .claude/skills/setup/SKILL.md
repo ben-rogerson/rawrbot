@@ -30,9 +30,9 @@ If `.env` is missing, create it by copying `.env.example` and ask the user for t
 ```
 WORKDIR=/absolute/path/to/this/repo
 
-# Optional: Telegram task management
-BOT_TOKEN=your-telegram-bot-token
-CHAT_ID=your-telegram-chat-id
+# Optional: Telegram notifications
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+TELEGRAM_CHAT_ID=your-telegram-chat-id
 ```
 
 Tell the user: Telegram vars are optional - leave them as placeholders if not using Telegram.

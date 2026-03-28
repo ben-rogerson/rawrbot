@@ -25,7 +25,7 @@ install() {
     fi
     # Unload first if already loaded
     launchctl bootout "gui/$(id -u)/${agent}" 2>/dev/null || true
-    cp "$src" "$dst"
+    ln -sf "$src" "$dst"
     launchctl bootstrap "gui/$(id -u)" "$dst"
     echo "OK    ${agent}"
   done
