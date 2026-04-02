@@ -10,7 +10,7 @@ Run the task execution agent exactly as the launchd agent would.
 ## Command
 
 ```bash
-. ~/.zshrc 2>/dev/null; /Users/ben/Projects/work/scripts/task-tick.sh >> /Users/ben/Projects/work/cron.log 2>&1
+. ~/.zshrc 2>/dev/null; /Users/ben/Projects/work/scripts/task-tick.sh 2>&1 | tee -a /Users/ben/Projects/work/cron.log
 ```
 
-Run this via Bash and report what was logged to cron.log afterwards.
+Run this via Bash. Output streams to both stdout (visible here) and cron.log. Report what happened when it finishes.

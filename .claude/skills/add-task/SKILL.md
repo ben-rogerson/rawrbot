@@ -41,7 +41,7 @@ Use the gathered info to produce entries matching the richer schema used in task
   "steps": [
     "Concrete step 1",
     "Concrete step 2",
-    "Commit with message '...'"
+    "Verify the change works"
   ],
   "reasoning": "Why this task matters and what success looks like.",
   "priority": 1,
@@ -53,7 +53,7 @@ Use the gathered info to produce entries matching the richer schema used in task
 
 - `id`: lowercase, hyphens only, max 40 chars; append `-2`, `-3` if slug already exists
 - `description`: complete enough for the agent to start without asking questions
-- `steps`: ordered, specific; always end with a commit message step
+- `steps`: ordered, specific; do not include commit steps (the task-tick agent handles commits separately)
 - `reasoning`: why the task is valuable and what "done" looks like
 - `priority`: 1 = highest; look at existing tasks to assign relative priority
 - `passes`: always `false`
