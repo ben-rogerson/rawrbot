@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+TASKS_TO_GENERATE=5
+MAX_PENDING_TASKS=20
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/../.env" ] && source "${SCRIPT_DIR}/../.env"
 WORKDIR="${WORKDIR:?WORKDIR must be set in .env}"
@@ -24,7 +27,7 @@ PROJECTS_LIST=$(ls -d "${WORKDIR}/projects"/*/ 2>/dev/null | xargs -I{} basename
 PROMPT_FILE=$(mktemp)
 trap 'rm -f "$PROMPT_FILE"' EXIT
 
-python3 - "$WORKDIR" "$TODAY" "$MEMORY_FILE" "$PROJECTS_LIST" "$PROMPT_FILE" <<'PYEOF'
+python3 - "$WORKDIR" "$TODAY" "$MEMORY_FILE" "$PROJECTS_LIST" "$PROMPT_FILE" "$TASKS_TO_GENERATE" "$MAX_PENDING_TASKS" <<'PYEOF'
 import sys, os
 
 workdir = sys.argv[1]
@@ -32,6 +35,8 @@ today = sys.argv[2]
 memory_file = sys.argv[3]
 projects_list = sys.argv[4]
 prompt_file = sys.argv[5]
+tasks_to_generate = sys.argv[6]
+max_pending_tasks = sys.argv[7]
 
 def read_file(path, default="(empty)"):
     try:
@@ -89,10 +94,10 @@ Then exit without making any other changes.
 STEP 2 - COUNT PENDING TASKS
 Count tasks in tasks.json where passes is false. Call this PENDING_COUNT.
 
-STEP 3 - GENERATE TASKS (only if PENDING_COUNT < 3)
-If PENDING_COUNT >= 3, skip this step and go to STEP 4.
+STEP 3 - GENERATE TASKS (only if PENDING_COUNT <= {max_pending_tasks})
+If PENDING_COUNT > {max_pending_tasks}, skip this step and go to STEP 4.
 
-Otherwise, generate between 1 and 5 new tasks. For each task:
+Otherwise, generate between 1 and {tasks_to_generate} new tasks. For each task:
 - Choose work that aligns with goals.md priorities
 - Convert any clearly actionable entries from notes.md into tasks
 - Do not repeat tasks already in tasks.json (check by description similarity)
