@@ -7,7 +7,7 @@
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/ben/Projects/work/scripts/plan-tick.sh</string>
+		<string>/Users/ben/Projects/work/scripts/run-plan.sh</string>
 	</array>
 
 	<key>StartCalendarInterval</key>

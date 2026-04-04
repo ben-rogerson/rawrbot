@@ -1,15 +1,11 @@
 {
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Review the conversation. Did a new project get created or completed in this session — meaning a new directory was set up with code files written to it? If YES, output exactly: {\"continue\": false, \"hookSpecificOutput\": {\"hookEventName\": \"Stop\", \"additionalContext\": \"A new project was just completed. You MUST now invoke the create-project-readme skill and write a README.md in the project folder before finishing.\"}} If NO, output nothing.",
-            "statusMessage": "Checking if README needed..."
-          }
-        ]
-      }
+  "permissions": {
+    "deny": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
     ]
-  }
+  },
+  "hooks": {}
 }

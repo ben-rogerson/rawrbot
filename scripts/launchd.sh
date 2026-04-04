@@ -11,23 +11,26 @@ TARGET_DIR="${HOME}/Library/LaunchAgents"
 AGENTS=(
   com.rawrbot.task-tick
   com.rawrbot.plan-tick
-  com.rawrbot.youtube-digest
 )
+
+install_agent() {
+  local agent="$1"
+  local src="$2"
+  local dst="${TARGET_DIR}/${agent}.plist"
+  if [ ! -f "$src" ]; then
+    echo "SKIP  ${agent} (plist not found)"
+    return
+  fi
+  launchctl bootout "gui/$(id -u)/${agent}" 2>/dev/null || true
+  ln -sf "$src" "$dst"
+  launchctl bootstrap "gui/$(id -u)" "$dst"
+  echo "OK    ${agent}"
+}
 
 install() {
   mkdir -p "${TARGET_DIR}"
   for agent in "${AGENTS[@]}"; do
-    src="${PLIST_DIR}/${agent}.plist"
-    dst="${TARGET_DIR}/${agent}.plist"
-    if [ ! -f "$src" ]; then
-      echo "SKIP  ${agent} (plist not found)"
-      continue
-    fi
-    # Unload first if already loaded
-    launchctl bootout "gui/$(id -u)/${agent}" 2>/dev/null || true
-    ln -sf "$src" "$dst"
-    launchctl bootstrap "gui/$(id -u)" "$dst"
-    echo "OK    ${agent}"
+    install_agent "$agent" "${PLIST_DIR}/${agent}.plist"
   done
   echo ""
   echo "All agents installed. Run '$0 status' to verify."

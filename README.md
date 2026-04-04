@@ -15,13 +15,13 @@ flowchart TD
     memory["🧠 memory/YYYY-MM-DD.md\n(daily summaries)"]
     projects["💻 projects/\n(built output)"]
 
-    goals --> plan["plan-tick.sh\n⏰ daily at 7am"]
+    goals --> plan["run-plan.sh\n⏰ daily at 7am"]
     notes --> plan
     memory --> plan
     plan -->|"generates 1-5 tasks"| tasks
     plan -->|"writes morning summary"| memory
 
-    tasks --> exec["task-tick.sh\n⏰ scheduled via launchd"]
+    tasks --> exec["run-task.sh\n⏰ scheduled via launchd"]
     exec -->|"builds & commits"| projects
     exec -->|"logs completion"| progress
 
@@ -75,18 +75,18 @@ Claude will parse your input, preview the entries, and ask for confirmation befo
 
 **Update priorities or constraints** - edit `goals.md` directly. The agent reads it on every planning tick and respects changes immediately.
 
-**Trigger a planning tick manually** - use the `/plan-tick` skill:
+**Trigger a planning tick manually** - use the `/run-plan` skill:
 
 ```
-/plan-tick
+/run-plan
 ```
 
 Runs the morning planning agent on demand - reads `goals.md`, `notes.md`, and recent memory, then generates new tasks.
 
-**Trigger an execution tick manually** - use the `/task-tick` skill:
+**Trigger an execution tick manually** - use the `/run-task` skill:
 
 ```
-/task-tick
+/run-task
 ```
 
 Picks the highest-priority pending task from `tasks.json` and executes it.
@@ -96,7 +96,7 @@ Picks the highest-priority pending task from `tasks.json` and executes it.
 Instead of launchd, you can drive the agent from within a Claude Code session using the `/loop` command:
 
 ```
-/loop 1h /task-tick
+/loop 1h /run-task
 ```
 
 This runs the execution tick every hour for as long as the session is open - no launchd required. Useful for short bursts of supervised work or when testing changes to the tick scripts.

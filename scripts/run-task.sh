@@ -59,13 +59,12 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
 ---
 
 1. Review the context above.
-2. Pick the highest-priority task from tasks.json where passes is false. Priority is array order — first incomplete task wins.
-   When marking a task complete, match it by its "id" field. If a task has no "id" field, match by description. Set passes: true on the matched task only.
+2. Pick the highest-priority task from tasks.json where completedAt is null. Priority is array order - first incomplete task wins.
+   When marking a task complete, match it by its "id" field. If a task has no "id" field, match by description. Set completedAt to the current ISO 8601 timestamp on the matched task only.
 3. Execute the task. New projects go in projects/<name>/.
 4. Run relevant checks (typecheck, tests) if the task involves code.
-5. Mark the task passes: true in tasks.json.
-5a. If the task created a new project directory, initialise a git repo in it (git init && git add -A && git commit -m "Initial commit") so the project has its own version control. projects/ is gitignored from the main repo, so each project must track itself.
-5b. If the task created a new project directory, write a README.md in the project root using this exact structure:
+5. Mark the task complete by setting completedAt to the current ISO 8601 timestamp in tasks.json.
+5a. If the task created a new project directory, write a README.md in the project root using this exact structure:
     - One or two sentences at the top: what it is and why it was built. Frame it as personal interest — curiosity, a problem to solve, something to learn. Never mention employers or portfolios.
     - ## What it does — bullet points only
     - ## How it works — a Mermaid diagram explaining key logic or data flow. Use flowchart TD for request/data flows, sequenceDiagram for multi-party interactions, or stateDiagram-v2 for state machines.
@@ -77,25 +76,25 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
 6. Append to progress.txt: task completed, key decisions, files changed, blockers. Be concise. Sacrifice grammar for concision.
 7. Append to {memory_file}: session summary, key decisions, what to carry forward tomorrow.
 8. If any long-term facts emerged (new project, key decision, user preference), update MEMORY.md.
-9. Commit changes: for the main repo (tasks.json, progress.txt, memory, goals.md), commit with a descriptive message. For project repos under projects/<name>/, commit within that project's own git repo. If the project has no .git directory, run git init first.
+9. Commit changes: commit tasks.json, progress.txt, memory, goals.md, and any new project files with a descriptive message. Do NOT run git init in project subdirectories - everything is tracked by the parent repo.
 Important: Do NOT modify goals.md under any circumstances. goals.md is managed exclusively by the planning agent.
-If all tasks have passes: true, output <promise>COMPLETE</promise> and stop."""
+If all tasks have a non-null completedAt, output <promise>COMPLETE</promise> and stop."""
 
 with open(prompt_file, "w") as f:
     f.write(prompt)
 PYEOF
 
 cd "${WORKDIR}"
-echo "task-tick: starting ($(date '+%Y-%m-%d %H:%M'))"
+echo "run-task: starting ($(date '+%Y-%m-%d %H:%M'))"
 OUTPUT=$(claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")")
 
 # Only notify if a task was actually executed (not when all tasks are already complete)
 if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then
-  echo "task-tick: all tasks already complete, nothing to do"
+  echo "run-task: all tasks already complete, nothing to do"
   exit 0
 fi
 
-echo "task-tick: task executed"
+echo "run-task: task executed"
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
   MSG=$(grep -v '^$' "${WORKDIR}/progress.txt" | tail -1)

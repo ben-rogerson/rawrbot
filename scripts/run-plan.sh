@@ -12,7 +12,7 @@ MEMORY_FILE="memory/${TODAY}.md"
 
 # goals.md is required - abort if missing
 if [ ! -f "${WORKDIR}/goals.md" ]; then
-  echo "[plan-tick] ERROR: goals.md not found. Aborting." >&2
+  echo "[run-plan] ERROR: goals.md not found. Aborting." >&2
   exit 1
 fi
 
@@ -92,7 +92,7 @@ Check that tasks.json above is valid JSON. If it is not valid JSON (and it is no
 Then exit without making any other changes.
 
 STEP 2 - COUNT PENDING TASKS
-Count tasks in tasks.json where passes is false. Call this PENDING_COUNT.
+Count tasks in tasks.json where completedAt is null. Call this PENDING_COUNT.
 
 STEP 3 - GENERATE TASKS (only if PENDING_COUNT <= {max_pending_tasks})
 If PENDING_COUNT > {max_pending_tasks}, skip this step and go to STEP 4.
@@ -108,7 +108,8 @@ Otherwise, generate between 1 and {tasks_to_generate} new tasks. For each task:
     "steps": ["<step 1>", "<step 2>"],
     "category": "agent-generated",
     "reasoning": "<why this task - reference goals, notes, or observed patterns>",
-    "passes": false,
+    "project": "<folder-name>",
+    "completedAt": null,
     "priority": 2,
     "addedBy": "agent",
     "addedAt": "{today}T07:00:00Z"

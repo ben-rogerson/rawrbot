@@ -14,6 +14,7 @@ Convert the user's natural language input into one or more richly-detailed entri
 Parse the user's input into discrete tasks. Split compound requests - e.g. "build a garden planner and also send a digest" → two tasks.
 
 For each task, assess what's missing from this list:
+
 - **Goal / why** - what outcome does this achieve?
 - **Acceptance criteria** - how does the agent know it's done?
 - **Steps / approach** - any specific tech stack, file paths, or constraints?
@@ -38,14 +39,11 @@ Use the gathered info to produce entries matching the richer schema used in task
 {
   "id": "slug-here",
   "description": "Full, unambiguous description the agent can act on directly.",
-  "steps": [
-    "Concrete step 1",
-    "Concrete step 2",
-    "Verify the change works"
-  ],
+  "steps": ["Concrete step 1", "Concrete step 2", "Verify the change works"],
   "reasoning": "Why this task matters and what success looks like.",
   "priority": 1,
-  "passes": false,
+  "project": "folder-name",
+  "completedAt": null,
   "addedBy": "user",
   "addedAt": "2026-03-22T10:00:00Z"
 }
@@ -53,10 +51,11 @@ Use the gathered info to produce entries matching the richer schema used in task
 
 - `id`: lowercase, hyphens only, max 40 chars; append `-2`, `-3` if slug already exists
 - `description`: complete enough for the agent to start without asking questions
-- `steps`: ordered, specific; do not include commit steps (the task-tick agent handles commits separately)
+- `steps`: ordered, specific; do not include commit steps (the run-task agent handles commits separately)
 - `reasoning`: why the task is valuable and what "done" looks like
 - `priority`: 1 = highest; look at existing tasks to assign relative priority
-- `passes`: always `false`
+- `project`: the folder name under subfolder /work/ (required, even if folder doesn't exist yet)
+- `completedAt`: always `null`
 - `addedBy`: `"user"`
 - `addedAt`: current ISO 8601 timestamp
 

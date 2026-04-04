@@ -126,6 +126,6 @@ The plist files in `launchd/` define the schedules. The user can edit them and r
 Print a checklist of what was created/skipped, and remind the user:
 
 - Edit `goals.md` to describe what they want built
-- Run `./scripts/plan-tick.sh` manually to generate the first batch of tasks
-- Use `/add-task` in Claude Code to queue tasks directly
 - Add ideas to `notes.md` to guide the tasks the agent will generate
+- Use the `/run-plan` skill in Claude Code to generate tasks
+- Use the `/add-task` skill in Claude Code to queue tasks

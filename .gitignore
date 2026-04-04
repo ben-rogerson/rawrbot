@@ -23,8 +23,4 @@ env.example
 
 # Claude stuff
 .claude/settings.local.json
-.claude/skills/*
-!.claude/skills/add-task/
-!.claude/skills/setup/
-!.claude/skills/task-tick
-!.claude/skills/plan-tick
+!.claude/chromecast/

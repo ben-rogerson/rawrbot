@@ -7,7 +7,7 @@
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/ben/Projects/work/scripts/task-tick.sh</string>
+		<string>/Users/ben/Projects/work/scripts/run-task.sh</string>
 	</array>
 
 	<key>StartCalendarInterval</key>
