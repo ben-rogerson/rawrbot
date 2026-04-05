@@ -64,7 +64,8 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
 3. Execute the task. New projects go in projects/<name>/.
 4. Run relevant checks (typecheck, tests) if the task involves code.
 5. Mark the task complete by setting completedAt to the current ISO 8601 timestamp in tasks.json.
-5a. If the task created a new project directory, write a README.md in the project root using this exact structure:
+5a. If the task created a new project directory, create a .gitignore in the project root with at minimum: node_modules/, dist/, .tanstack/ (add other entries as appropriate for the project type, e.g. .astro/ for Astro projects, .env for projects with secrets).
+5b. If the task created a new project directory, write a README.md in the project root using this exact structure:
     - One or two sentences at the top: what it is and why it was built. Frame it as personal interest — curiosity, a problem to solve, something to learn. Never mention employers or portfolios.
     - ## What it does — bullet points only
     - ## How it works — a Mermaid diagram explaining key logic or data flow. Use flowchart TD for request/data flows, sequenceDiagram for multi-party interactions, or stateDiagram-v2 for state machines.
