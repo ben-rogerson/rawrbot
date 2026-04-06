@@ -1,0 +1,67 @@
+name: Deploy Burger Journal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/burger-journal/**'
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/burger-journal/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/burger-journal
+      - run: pnpm typecheck
+        working-directory: projects/burger-journal
+
+  deploy-api:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/burger-journal/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/burger-journal
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: projects/burger-journal/packages/api
+          command: deploy
+
+  deploy-web:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/burger-journal/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/burger-journal
+      - run: pnpm --filter @burger-journal/web build
+        working-directory: projects/burger-journal
+        env:
+          VITE_API_URL: https://burger-journal-api.ben-rogerson.workers.dev
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: projects/burger-journal/packages/web
+          command: pages deploy dist --project-name burger-journal-web
