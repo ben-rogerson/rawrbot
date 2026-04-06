@@ -106,7 +106,6 @@ Otherwise, generate between 1 and {tasks_to_generate} new tasks. For each task:
     "id": "<short-slug-max-5-words-hyphenated>",
     "description": "<what to build or do>",
     "steps": ["<step 1>", "<step 2>"],
-    "category": "agent-generated",
     "reasoning": "<why this task - reference goals, notes, or observed patterns>",
     "project": "<folder-name>",
     "completedAt": null,
@@ -128,7 +127,7 @@ If tasks were generated in STEP 3:
   ## Morning plan - {today}
 
   Tasks queued (N):
-  1. [category] description - reasoning
+  1. description - reasoning
   ... (one line per task)
 
   (If goals.md was updated, add a line: "goals.md updated: <what changed>")
