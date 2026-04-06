@@ -31,7 +31,19 @@ If any of the above are unclear or missing, **ask the user before generating the
 
 Skip questions where the answer is obvious from context. Don't ask for information you can reasonably infer.
 
-### 3. Build rich task entries
+### 3. Challenge and pressure-test
+
+Before building the task, act as a high-level advisor. Challenge the user's thinking, question assumptions, and expose blind spots. Don't default to agreement - if the reasoning is weak, break it down and show why. Consider:
+
+- **Is this the right problem to solve?** Is there a simpler or higher-leverage approach?
+- **Assumptions** - what's being taken for granted that might not hold? (e.g. "users want X", "this tech is the right fit", "this is urgent")
+- **Scope** - is this too ambitious for one task, or too trivial to bother queuing?
+- **Dependencies** - does this block on or conflict with existing tasks or projects?
+- **Opportunity cost** - is this the best use of agent time right now given current priorities?
+
+Present your pushback concisely. If the task holds up under scrutiny, say so and move on. If not, suggest a sharper alternative or ask the user to reconsider. Only proceed to step 4 once the user confirms they want to go ahead.
+
+### 4. Build rich task entries
 
 Use the gathered info to produce entries matching the richer schema used in tasks.json:
 
@@ -59,11 +71,11 @@ Use the gathered info to produce entries matching the richer schema used in task
 - `addedBy`: `"user"`
 - `addedAt`: current ISO 8601 timestamp
 
-### 4. Read existing tasks
+### 5. Read existing tasks
 
 Read `~/Projects/work/tasks.json`. If missing or empty, treat as `[]`. Collect existing `id` values and note current priorities.
 
-### 5. Preview and confirm
+### 6. Preview and confirm
 
 Show the new entries as formatted JSON, then ask: **"Add these to tasks.json?"**
 
