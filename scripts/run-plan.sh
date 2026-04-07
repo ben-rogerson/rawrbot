@@ -118,7 +118,11 @@ Use this exact format for each plan file:
 
 # <Plan Title>
 
-<Description of what to build and why. 1-3 sentences. Reference goals, notes, or observed patterns.>
+<Description of what to build. 1-2 sentences.>
+
+## Reasoning
+
+<Why this work is being prioritised now. Reference goals.md priorities, notes.md entries, or observed patterns. 2-4 sentences.>
 
 ## Steps
 1. <concrete step 1>

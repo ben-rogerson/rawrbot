@@ -13,13 +13,19 @@ Run `scripts/list-plans.sh`. If the output is "No staged plans.", tell the user 
 
 ### 2. Display each plan
 
-Show the `list-plans.sh` output to the user.
+Format the `list-plans.sh` output as a markdown table with columns: **#**, **Title**, **Project**, **Priority**, **Description** (truncated to ~120 chars).
 
-### 3. Ask user what to approve
+### 3. Give your take and ask what to approve
 
-Ask: "Approve all, or would you like to remove/edit any?"
+After the table, immediately give your own recommendation without waiting to be asked:
 
-- If the user wants to remove plans, note which files to skip (leave them in `plans/` for next time)
+- Flag any obvious duplicates (same concept, different slug)
+- Group by priority and note which are the clearest wins
+- Suggest a shortlist to approve and which to defer/cancel, with brief reasoning
+
+Then ask: "Which would you like to approve?"
+
+- If the user wants to cancel specific plans, note their slugs
 - If the user wants to edit fields, apply those changes to the task being built
 
 ### 4. Extract approved plans
@@ -30,8 +36,18 @@ Run the extract script with the slugs (filenames without `.md`) of the approved 
 bash scripts/extract-plans.sh <slug1> [<slug2> ...]
 ```
 
-The script parses each plan file, appends entries to `tasks.json` (safe write via tmp), and deletes the approved plan files. Rejected plans are left in `plans/` untouched.
+The script parses each plan file, appends entries to `tasks.json` (safe write via tmp), and moves approved plan files to `plans/approved/`.
 
-### 5. Confirm
+### 5. Move explicitly cancelled plans
 
-Show the user what was added: count of tasks, their ids, priorities, and projects.
+If the user asked to cancel specific plans, move only those to `plans/cancelled/`:
+
+```bash
+mkdir -p plans/cancelled && mv plans/<slug>.md plans/cancelled/
+```
+
+Do not move any plans the user did not explicitly ask to cancel. Unapproved plans that weren't cancelled stay in `plans/` untouched.
+
+### 6. Confirm
+
+Show the user what was added: count of tasks, their ids, priorities, and projects. Note any explicitly cancelled plans.

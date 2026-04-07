@@ -104,10 +104,12 @@ with open(tasks_tmp) as f:
 os.replace(tasks_tmp, tasks_path)
 
 # Delete approved plan files
+approved_dir = os.path.join(plans_dir, "approved")
+os.makedirs(approved_dir, exist_ok=True)
 for slug in added:
     plan_path = os.path.join(plans_dir, slug + ".md")
-    os.remove(plan_path)
-    print(f"[extract-plans] Deleted plans/{slug}.md")
+    os.rename(plan_path, os.path.join(approved_dir, slug + ".md"))
+    print(f"[extract-plans] Moved plans/{slug}.md -> plans/approved/")
 
 print(f"[extract-plans] Done - {len(added)} task(s) added to tasks.json")
 PYEOF
