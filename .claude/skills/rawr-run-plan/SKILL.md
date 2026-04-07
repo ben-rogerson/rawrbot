@@ -5,14 +5,18 @@ description: Use when the user wants to manually run the planning agent - genera
 
 # Run Plan
 
-Reads `goals.md` and `notes.md`, generates 1-5 plan files in `plans/` for review. Does NOT execute anything or modify `tasks.json`.
+## Steps
 
-After running, review the plan files in `plans/`, then clear context and run `/rawr-approve-plans` to extract approved plans into `tasks.json`.
+1. Note the current line count of `cron.log`:
+   ```bash
+   wc -l /Users/ben/Projects/work/cron.log
+   ```
 
-## Command
+2. Run the script **in the background** (`run_in_background: true`):
+   ```bash
+   . ~/.zshrc 2>/dev/null; /Users/ben/Projects/work/scripts/run-plan.sh >> /Users/ben/Projects/work/cron.log 2>&1
+   ```
 
-```bash
-. ~/.zshrc 2>/dev/null; /Users/ben/Projects/work/scripts/run-plan.sh >> /Users/ben/Projects/work/cron.log 2>&1
-```
+3. Wait for the background task completion notification. Do NOT poll cron.log while waiting.
 
-Run this via Bash and report what was logged to cron.log afterwards.
+4. Once notified, read only the new lines (offset = line count from step 1) using the Read tool on `cron.log`, and report the results.

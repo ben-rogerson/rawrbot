@@ -5,8 +5,6 @@ description: Use when the user wants to manually run the task execution agent - 
 
 # Run Task
 
-Picks the highest-priority pending task from `tasks.json` and executes it autonomously. One task per run.
-
 ## Command
 
 ```bash

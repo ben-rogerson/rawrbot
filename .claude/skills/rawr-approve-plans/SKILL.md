@@ -5,8 +5,6 @@ description: Review staged plan files in plans/ and extract approved ones into t
 
 # Approve Plans
 
-Extract approved plans from `plans/` into `tasks.json` entries.
-
 ## Steps
 
 ### 1. Check for staged plans

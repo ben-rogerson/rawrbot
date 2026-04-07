@@ -5,8 +5,6 @@ description: Use when a new project has been completed - creates a README.md in 
 
 # Create README
 
-When a new project is complete, write a `README.md` in its root folder.
-
 ## Rules
 
 - **Frame it as personal interest** - curiosity, a problem you wanted to solve, something you wanted to learn.

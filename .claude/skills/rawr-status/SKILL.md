@@ -5,7 +5,7 @@ description: Show a dashboard summary of the autonomous agent - pending tasks, s
 
 # Status
 
-Quick read-only dashboard of the agent's current state. No mutations.
+No mutations.
 
 ## Steps
 
