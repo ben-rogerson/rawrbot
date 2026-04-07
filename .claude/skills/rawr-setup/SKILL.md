@@ -1,5 +1,5 @@
 ---
-name: setup
+name: rawr-setup
 description: Use when setting up this autonomous agent workspace for the first time - creates missing config files, initialises the task queue, and installs launchd agents.
 ---
 
@@ -17,8 +17,8 @@ Check which of these files/directories exist:
 - `goals.md`
 - `notes.md`
 - `tasks.json`
-- `progress.txt`
-- `MEMORY.md`
+- `memory/progress.txt`
+- `memory/index.md`
 - `memory/`
 
 Skip creating any that already exist. If everything exists, say so and stop.
@@ -82,13 +82,17 @@ If missing, write an empty JSON array:
 []
 ```
 
-### 6. Create `progress.txt`
+### 6. Create `memory/` directory and files
 
-If missing, create an empty file.
+If missing, create the directory:
 
-### 7. Create `MEMORY.md`
+```bash
+mkdir -p memory
+```
 
-If missing, create it with a header comment:
+If `memory/progress.txt` is missing, create an empty file.
+
+If `memory/index.md` is missing, create it with a header comment:
 
 ```markdown
 # Memory Index
@@ -97,15 +101,7 @@ If missing, create it with a header comment:
 <!-- Example: - [memory/2026-03-23.md](memory/2026-03-23.md) — first session, bootstrapped workspace -->
 ```
 
-### 8. Create `memory/` directory
-
-If missing, create the directory with a `.gitkeep` so it's tracked:
-
-```bash
-mkdir -p memory && touch memory/.gitkeep
-```
-
-### 9. Install launchd agents
+### 7. Install launchd agents
 
 Ask the user: "Would you like me to install the launchd agents now?"
 
@@ -121,11 +117,11 @@ If no, tell the user they can install later with `./scripts/launchd.sh install`.
 
 The plist files in `launchd/` define the schedules. The user can edit them and re-run `./scripts/launchd.sh install` to apply changes.
 
-### 10. Summary
+### 8. Summary
 
 Print a checklist of what was created/skipped, and remind the user:
 
 - Edit `goals.md` to describe what they want built
 - Add ideas to `notes.md` to guide the tasks the agent will generate
-- Use the `/run-plan` skill in Claude Code to generate tasks
-- Use the `/add-task` skill in Claude Code to queue tasks
+- Use the `/rawr-run-plan` skill in Claude Code to generate tasks
+- Use the `/rawr-add-task` skill in Claude Code to queue tasks

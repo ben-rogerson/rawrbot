@@ -8,10 +8,11 @@ notes.md
 tasks.json
 .githooks/
 
+# Staged plans
+plans/
+
 # Memory
 memory/
-MEMORY.md
-progress.txt
 
 # Projects
 projects/

@@ -1,5 +1,5 @@
 ---
-name: add-task
+name: rawr-add-task
 description: Add one or more tasks to tasks.json from natural language. Use when the user wants to queue work for the autonomous agent.
 ---
 
@@ -79,5 +79,9 @@ Read `~/Projects/work/tasks.json`. If missing or empty, treat as `[]`. Collect e
 
 Show the new entries as formatted JSON, then ask: **"Add these to tasks.json?"**
 
-- **Yes** → append to existing array and write back to `~/Projects/work/tasks.json`
+- **Yes** → append to existing array and write back using the safe write pattern:
+  1. Write the updated JSON array to `tasks.json.tmp`
+  2. Verify it's valid JSON: `python3 -c "import json; json.load(open('tasks.json.tmp'))"`
+  3. `mv tasks.json.tmp tasks.json`
+  Never write directly to `tasks.json` - always go through the tmp file to prevent data loss from pipe truncation.
 - **No** → discard and confirm nothing was written

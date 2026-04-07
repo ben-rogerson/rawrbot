@@ -37,14 +37,14 @@ def tail_file(path, n=50, default="(empty)"):
     except FileNotFoundError:
         return default
 
-memory_md = read_file(os.path.join(workdir, "MEMORY.md"))
+memory_md = read_file(os.path.join(workdir, "memory/index.md"))
 daily_memory = read_file(os.path.join(workdir, memory_file))
 tasks_json = read_file(os.path.join(workdir, "tasks.json"), "[]")
-progress = tail_file(os.path.join(workdir, "progress.txt"))
+progress = tail_file(os.path.join(workdir, "memory/progress.txt"))
 
 prompt = f"""You are an autonomous agent working in {workdir}. Here is your context:
 
---- MEMORY.md ---
+--- memory/index.md ---
 {memory_md}
 
 --- {memory_file} ---
@@ -53,7 +53,7 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
 --- tasks.json ---
 {tasks_json}
 
---- progress.txt (last 50 lines) ---
+--- memory/progress.txt (last 50 lines) ---
 {progress}
 
 ---
@@ -64,6 +64,13 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
 3. Execute the task. New projects go in projects/<name>/.
 4. Run relevant checks (typecheck, tests) if the task involves code.
 5. Mark the task complete by setting completedAt to the current ISO 8601 timestamp in tasks.json.
+   CRITICAL - safe write pattern for tasks.json (prevents data loss from pipe truncation):
+     a. Read the current tasks.json contents into memory
+     b. Make the change in memory (set completedAt on the matched task)
+     c. Write the full updated JSON array to tasks.json.tmp
+     d. Verify tasks.json.tmp is valid JSON: python3 -c "import json; json.load(open('tasks.json.tmp'))"
+     e. mv tasks.json.tmp tasks.json
+   NEVER pipe output directly into tasks.json. NEVER use patterns like 'jq ... | tee tasks.json' or 'cat > tasks.json' where the same file is both read source and write target.
 5a. If the task created a new project directory, create a .gitignore in the project root with at minimum: node_modules/, dist/, .tanstack/ (add other entries as appropriate for the project type, e.g. .astro/ for Astro projects, .env for projects with secrets).
 5b. If the task created a new project directory, write a README.md in the project root using this exact structure:
     - One or two sentences at the top: what it is and why it was built. Frame it as personal interest — curiosity, a problem to solve, something to learn. Never mention employers or portfolios.
@@ -76,7 +83,7 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
     Rules: plain language, no buzzwords, short and scannable, no badges or decorative elements.
 6. Append to progress.txt: task completed, key decisions, files changed, blockers. Be concise. Sacrifice grammar for concision.
 7. Append to {memory_file}: session summary, key decisions, what to carry forward tomorrow.
-8. If any long-term facts emerged (new project, key decision, user preference), update MEMORY.md.
+8. If any long-term facts emerged (new project, key decision, user preference), update memory/index.md.
 9. Commit changes: commit tasks.json, progress.txt, memory, goals.md, and any new project files with a descriptive message. Do NOT run git init in project subdirectories - everything is tracked by the parent repo.
 Important: Do NOT modify goals.md under any circumstances. goals.md is managed exclusively by the planning agent.
 If all tasks have a non-null completedAt, output <promise>COMPLETE</promise> and stop."""
@@ -98,7 +105,7 @@ fi
 echo "run-task: task executed"
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
-  MSG=$(grep -v '^$' "${WORKDIR}/progress.txt" | tail -1)
+  MSG=$(grep -v '^$' "${WORKDIR}/memory/progress.txt" | tail -1)
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
     --data-urlencode "text=${MSG}" > /dev/null || true

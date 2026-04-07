@@ -1,5 +1,5 @@
 ---
-name: create-readme
+name: rawr-create-readme
 description: Use when a new project has been completed - creates a README.md in the project folder
 ---
 
