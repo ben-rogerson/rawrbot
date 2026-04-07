@@ -1,0 +1,67 @@
+name: Deploy Airfryer Recipes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/airfryer-recipes/**'
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/airfryer-recipes/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/airfryer-recipes
+      - run: pnpm typecheck
+        working-directory: projects/airfryer-recipes
+
+  deploy-api:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/airfryer-recipes/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/airfryer-recipes
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: projects/airfryer-recipes/packages/api
+          command: deploy
+
+  deploy-web:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/airfryer-recipes/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/airfryer-recipes
+      - run: pnpm --filter @airfryer-recipes/web build
+        working-directory: projects/airfryer-recipes
+        env:
+          VITE_API_URL: https://airfryer-recipes-api.ben-rogerson.workers.dev
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: projects/airfryer-recipes/packages/web
+          command: pages deploy dist --project-name airfryer-recipes-web

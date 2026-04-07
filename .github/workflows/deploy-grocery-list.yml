@@ -1,0 +1,67 @@
+name: Deploy Grocery List
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/grocery-list/**'
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/grocery-list/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/grocery-list
+      - run: pnpm typecheck
+        working-directory: projects/grocery-list
+
+  deploy-api:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/grocery-list/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/grocery-list
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: projects/grocery-list/packages/api
+          command: deploy
+
+  deploy-web:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/grocery-list/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: projects/grocery-list
+      - run: pnpm --filter @grocery-list/web build
+        working-directory: projects/grocery-list
+        env:
+          VITE_API_URL: https://grocery-list-api.ben-rogerson.workers.dev
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: projects/grocery-list/packages/web
+          command: pages deploy dist --project-name grocery-list-web
