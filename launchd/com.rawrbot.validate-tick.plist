@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.rawrbot.validate-tick</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/ben/Projects/work/scripts/run-validate.sh</string>
+	</array>
+
+	<key>StartCalendarInterval</key>
+	<array>
+		<!-- 8am daily (1 hour after plan-tick on weekends, catches manual plans on weekdays) -->
+		<dict>
+			<key>Hour</key>
+			<integer>8</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+
+	<key>StandardOutPath</key>
+	<string>/Users/ben/Projects/work/cron.log</string>
+
+	<key>StandardErrorPath</key>
+	<string>/Users/ben/Projects/work/cron.log</string>
+
+	<key>WorkingDirectory</key>
+	<string>/Users/ben/Projects/work</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/ben/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+	</dict>
+</dict>
+</plist>

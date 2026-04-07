@@ -8,31 +8,27 @@ An autonomous agent workspace. The agent plans its own work daily, executes task
 
 ```mermaid
 flowchart TD
-    goals["goals.md\n(your north star)"]
-    notes["notes.md\n(your ideas)"]
-    plans["plans/\n(staged plans)"]
-    tasks["tasks.json\n(task queue)"]
-    progress["memory/progress.txt\n(completed work)"]
-    memory["memory/YYYY-MM-DD.md\n(daily summaries)"]
-    projects["projects/\n(built output)"]
+    goals["🎯 goals.md\n(your north star)"]
+    notes["💡 notes.md\n(your ideas)"]
+    plans["📋 plans"]
+    tasks["✅ tasks.json\n(task queue)"]
+    memory["🧠 memory\n(daily summaries)"]
+    projects["🚀 projects/\n(built output)"]
 
-    plan["Planner\n7am daily"] -->|"writes 1-5 plan files"| plans
-    plan -->|"writes morning summary"| memory
+    plan["🤖 Planning Agent\n(scheduled)"] --> plans
+    plan --> memory
 
-    plans -->|"you review & approve"| approve["/approve-plans"]
-    approve -->|"extracts into"| tasks
+    plans --> validate["🤖 Validator Agent\n(scheduled)"]
+    plans --> approve["👀 Validate plans\n(skill)"]
+    validate --> tasks
+    approve --> tasks
 
-    tasks --> exec["run-task.sh\nscheduled via launchd"]
-    exec -->|"builds & commits"| projects
-    exec -->|"logs completion"| progress
+    schedule["🤖 Task Agent\n(scheduled)"]
+    tasks -->|"picks next task"| schedule
+    schedule -->|"builds"| projects
 
-    progress -->|"informs"| plan
-    goals -->|"guides"| plan
-    notes -->|"ideas picked up by"| plan
-
-    you["You"] -->|"edit"| goals
-    you -->|"drop ideas"| notes
-    you -->|"queue directly"| tasks
+    goals --> plan
+    notes --> plan
 ```
 
 ## Getting Started
@@ -44,6 +40,7 @@ flowchart TD
 3. **Run `/setup`** in a Claude Code session - it will create all required files with examples and install the launchd agents.
 
 4. **Try it out** - queue your first task and watch it execute:
+
    ```
    /add-task build a hello world CLI tool
    /run-task
@@ -56,32 +53,33 @@ flowchart TD
 
 ## Files
 
-| File                   | Purpose                                                                                     |
-| ---------------------- | ------------------------------------------------------------------------------------------- |
-| `goals.md`             | Agent's north star - what to build, priorities, constraints. Edit freely.                   |
-| `notes.md`             | Your scratchpad - drop ideas here, the agent converts actionable ones to tasks each morning |
-| `plans/`               | Staged plan files from the planner - review then `/approve-plans` to extract into tasks.json |
-| `tasks.json`           | Task queue - populated via `/approve-plans` or `/add-task`, executed by the task agent       |
-| `memory/progress.txt`  | Log of completed work                                                                       |
-| `memory/index.md`      | Long-term agent memory                                                                      |
-| `memory/YYYY-MM-DD.md` | Daily notes - morning plan + session summaries                                              |
-| `projects/`            | Agent-created projects live here                                                            |
-| `launchd/`             | Plist files for launchd scheduling                                                          |
-| `cron.log`             | Output from scheduled scripts                                                               |
+| File                   | Purpose                                                                                       |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| `goals.md`             | Agent's north star - what to build, priorities, constraints. Edit freely.                     |
+| `notes.md`             | Your scratchpad - drop ideas here, the agent converts actionable ones to tasks each morning   |
+| `plans/`               | Staged plan files from the planner - review then `/validate-plans` to extract into tasks.json |
+| `tasks.json`           | Task queue - populated via `/validate-plans` or `/add-task`, executed by the task agent       |
+| `memory/progress.txt`  | Log of completed work                                                                         |
+| `memory/index.md`      | Long-term agent memory                                                                        |
+| `memory/YYYY-MM-DD.md` | Daily notes - morning plan + session summaries                                                |
+| `projects/`            | Agent-created projects live here                                                              |
+| `launchd/`             | Plist files for launchd scheduling                                                            |
+| `cron.log`             | Output from scheduled scripts                                                                 |
 
 ## Skills
 
-| I want to...                    | Use this             |
-|---------------------------------|----------------------|
-| Dump a vague idea for later     | Add to `notes.md`    |
-| Shape an idea into a plan       | `/add-plan`          |
-| Queue exact work immediately    | `/add-task`          |
-| Review and approve staged plans | `/approve-plans`     |
-| Trigger the planner manually    | `/run-plan`          |
-| Execute the next task manually  | `/run-task`          |
-| Check system status             | `/status`            |
-| Generate a project README       | `/create-readme`     |
-| First-time workspace setup      | `/setup`             |
+| I want to...                    | Use this          |
+| ------------------------------- | ----------------- |
+| Dump a vague idea for later     | Add to `notes.md` |
+| Shape an idea into a plan       | `/add-plan`       |
+| Queue exact work immediately    | `/add-task`       |
+| Review and approve staged plans | `/validate-plans` |
+| Validate plans manually         | `/run-validate`   |
+| Trigger the planner manually    | `/run-plan`       |
+| Execute the next task manually  | `/run-task`       |
+| Check system status             | `/status`         |
+| Generate a project README       | `/create-readme`  |
+| First-time workspace setup      | `/setup`          |
 
 ## Steering the Agent
 
@@ -107,7 +105,7 @@ build a CLI tool that summarises my git activity for the week
 
 **Update priorities or constraints** - edit `goals.md` directly. The agent reads it on every planning tick and respects changes immediately.
 
-**Review staged plans** - run `/approve-plans` to see plan files from `plans/`, approve, edit, or reject them before extracting into `tasks.json`.
+**Review staged plans** - run `/validate-plans` to see plan files from `plans/`, approve, edit, or reject them before extracting into `tasks.json`.
 
 **Trigger agents manually** - run `/run-plan` to generate plans on demand, or `/run-task` to execute the next pending task.
 

@@ -84,7 +84,7 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
 6. Append to progress.txt: task completed, key decisions, files changed, blockers. Be concise. Sacrifice grammar for concision.
 7. Append to {memory_file}: session summary, key decisions, what to carry forward tomorrow.
 8. If any long-term facts emerged (new project, key decision, user preference), update memory/index.md.
-9. Commit changes: commit tasks.json, progress.txt, memory, goals.md, and any new project files with a descriptive message. Do NOT run git init in project subdirectories - everything is tracked by the parent repo.
+9. Do NOT commit changes. Do NOT git init the new project.
 Important: Do NOT modify goals.md under any circumstances. goals.md is managed exclusively by the planning agent.
 If all tasks have a non-null completedAt, output <promise>COMPLETE</promise> and stop."""
 

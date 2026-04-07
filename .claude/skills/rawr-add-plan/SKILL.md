@@ -5,7 +5,7 @@ description: Firm up a rough idea into a structured plan document in plans/. Sha
 
 # Add Plan
 
-Take a rough idea from the user and shape it into a well-defined plan document in `plans/`. Plans are NOT added to `tasks.json` - they sit in `plans/` for review, then get promoted via `/rawr-approve-plans`.
+Take a rough idea from the user and shape it into a well-defined plan document in `plans/`. Plans are NOT added to `tasks.json` - they sit in `plans/` for review, then get promoted via `/rawr-validate-plans`.
 
 ## Steps
 
@@ -88,4 +88,4 @@ Show the full plan document, then ask: **"Write this to plans/<slug>.md?"**
 Ask the user: **"Add this directly to the task queue, or leave it staged in plans/ for batch review?"**
 
 - **Queue now** - convert the plan into a task JSON entry (same schema as `/rawr-add-task`) and pipe it to `scripts/append-task.sh`. Delete the plan file from `plans/` after writing.
-- **Stage** - leave it in `plans/`. Tell the user: "Run `/rawr-approve-plans` when you're ready to promote it to the task queue."
+- **Stage** - leave it in `plans/`. Tell the user: "Run `/rawr-validate-plans` when you're ready to promote it to the task queue."

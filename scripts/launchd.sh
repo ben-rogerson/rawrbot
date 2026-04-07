@@ -11,6 +11,7 @@ TARGET_DIR="${HOME}/Library/LaunchAgents"
 AGENTS=(
   com.rawrbot.task-tick
   com.rawrbot.plan-tick
+  com.rawrbot.validate-tick
 )
 
 install_agent() {
