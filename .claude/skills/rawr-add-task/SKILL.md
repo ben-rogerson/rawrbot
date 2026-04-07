@@ -73,15 +73,14 @@ Use the gathered info to produce entries matching the richer schema used in task
 
 ### 5. Read existing tasks
 
-Read `~/Projects/work/tasks.json`. If missing or empty, treat as `[]`. Collect existing `id` values and note current priorities.
+Run `scripts/append-task.sh --list` to see existing task IDs and priority spread.
 
 ### 6. Preview and confirm
 
 Show the new entries as formatted JSON, then ask: **"Add these to tasks.json?"**
 
-- **Yes** → append to existing array and write back using the safe write pattern:
-  1. Write the updated JSON array to `tasks.json.tmp`
-  2. Verify it's valid JSON: `python3 -c "import json; json.load(open('tasks.json.tmp'))"`
-  3. `mv tasks.json.tmp tasks.json`
-  Never write directly to `tasks.json` - always go through the tmp file to prevent data loss from pipe truncation.
+- **Yes** → for each task, pipe its JSON to `scripts/append-task.sh`:
+  ```bash
+  echo '<task-json>' | scripts/append-task.sh
+  ```
 - **No** → discard and confirm nothing was written

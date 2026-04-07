@@ -9,16 +9,11 @@ description: Review staged plan files in plans/ and extract approved ones into t
 
 ### 1. Check for staged plans
 
-List all `.md` files in `~/Projects/work/plans/`. If none exist, tell the user there are no staged plans and stop.
+Run `scripts/list-plans.sh`. If the output is "No staged plans.", tell the user and stop.
 
 ### 2. Display each plan
 
-For each plan file, read the contents and show a summary:
-- **Filename** (becomes the task id)
-- **Title** (from `# heading`)
-- **Description** (body text before ## Steps)
-- **Steps** (numbered list)
-- **Priority** and **Project** (from ## Meta)
+Show the `list-plans.sh` output to the user.
 
 ### 3. Ask user what to approve
 
@@ -27,47 +22,16 @@ Ask: "Approve all, or would you like to remove/edit any?"
 - If the user wants to remove plans, note which files to skip (leave them in `plans/` for next time)
 - If the user wants to edit fields, apply those changes to the task being built
 
-### 4. Build task entries
+### 4. Extract approved plans
 
-For each approved plan, build a JSON object matching the tasks.json schema:
+Run the extract script with the slugs (filenames without `.md`) of the approved plans:
 
-```json
-{
-  "id": "<filename without .md>",
-  "description": "<body text from plan - the description/reasoning paragraph>",
-  "steps": ["<step 1>", "<step 2>"],
-  "reasoning": "<why this task matters - extract from the description context>",
-  "priority": <from ## Meta>,
-  "project": "<from ## Meta>",
-  "completedAt": null,
-  "addedBy": "agent",
-  "addedAt": "<current ISO 8601 timestamp>"
-}
+```bash
+bash scripts/extract-plans.sh <slug1> [<slug2> ...]
 ```
 
-Field mapping:
-- `id`: the plan filename without `.md` extension
-- `description`: the paragraph(s) between the `# title` and `## Steps`
-- `steps`: the numbered list items under `## Steps`
-- `reasoning`: derive from the description - why this work matters
-- `priority`: from the `**priority:**` line in `## Meta`
-- `project`: from the `**project:**` line in `## Meta`
+The script parses each plan file, appends entries to `tasks.json` (safe write via tmp), and deletes the approved plan files. Rejected plans are left in `plans/` untouched.
 
-### 5. Safe write to tasks.json
-
-Read the current `~/Projects/work/tasks.json`. Append the approved task entries to the array.
-
-**CRITICAL - use the safe write pattern:**
-1. Write the updated JSON array to `tasks.json.tmp`
-2. Verify it is valid JSON: `python3 -c "import json; json.load(open('tasks.json.tmp'))"`
-3. Only then: `mv tasks.json.tmp tasks.json`
-
-Never write directly to `tasks.json`.
-
-### 6. Clean up approved plans
-
-Delete the `.md` files in `plans/` for plans that were approved and extracted. Leave any rejected plans in place.
-
-### 7. Confirm
+### 5. Confirm
 
 Show the user what was added: count of tasks, their ids, priorities, and projects.

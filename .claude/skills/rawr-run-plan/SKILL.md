@@ -1,6 +1,6 @@
 ---
 name: rawr-run-plan
-description: Use when the user wants to manually run the planning agent - generates plan files in plans/ for review, updates goals.md
+description: Manually run the planning agent - generate plan files in plans/ for review and update goals.md.
 ---
 
 # Run Plan
@@ -8,13 +8,15 @@ description: Use when the user wants to manually run the planning agent - genera
 ## Steps
 
 1. Note the current line count of `cron.log`:
+
    ```bash
-   wc -l /Users/ben/Projects/work/cron.log
+   REPO=$(git rev-parse --show-toplevel); wc -l "$REPO/cron.log" 2>/dev/null || echo "0 $REPO/cron.log"
    ```
 
 2. Run the script **in the background** (`run_in_background: true`):
+
    ```bash
-   . ~/.zshrc 2>/dev/null; /Users/ben/Projects/work/scripts/run-plan.sh >> /Users/ben/Projects/work/cron.log 2>&1
+   REPO=$(git rev-parse --show-toplevel); . ~/.zshrc 2>/dev/null; "$REPO/scripts/run-plan.sh" >> "$REPO/cron.log" 2>&1
    ```
 
 3. Wait for the background task completion notification. Do NOT poll cron.log while waiting.

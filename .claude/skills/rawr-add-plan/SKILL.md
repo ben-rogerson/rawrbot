@@ -1,6 +1,6 @@
 ---
 name: rawr-add-plan
-description: Firm up a rough idea into a structured plan document in plans/. Use when the user has a vague concept they want shaped into something the autonomous agent can execute.
+description: Firm up a rough idea into a structured plan document in plans/. Shape a vague concept into something the autonomous agent can execute.
 ---
 
 # Add Plan
@@ -54,16 +54,19 @@ Write a plan file matching the format used by `run-plan`:
 <Description of what to build and why. 1-3 sentences. Reference goals, notes, or observed patterns where relevant.>
 
 ## Steps
+
 1. <concrete step 1>
 2. <concrete step 2>
 3. <verify the change works>
 
 ## Meta
+
 - **priority:** <1-3, where 1 is highest>
 - **project:** <folder-name under projects/>
 ```
 
 Guidelines:
+
 - Steps should be concrete and ordered - the autonomous agent will follow them literally
 - Do NOT include commit steps (the run-task agent handles commits separately)
 - Keep the description focused on what and why, not how (that's what steps are for)
@@ -71,18 +74,18 @@ Guidelines:
 
 ### 5. Check for clashes
 
-Read existing filenames in `~/Projects/work/plans/` and existing task ids in `~/Projects/work/tasks.json`. Make sure the chosen slug doesn't collide with either.
+Run `scripts/list-plans.sh` (for plan slugs) and `scripts/append-task.sh --list` (for task IDs). Make sure the chosen slug doesn't collide with either.
 
 ### 6. Preview and confirm
 
 Show the full plan document, then ask: **"Write this to plans/<slug>.md?"**
 
-- **Yes** - write the file to `~/Projects/work/plans/<slug>.md`
+- **Yes** - write the file to `plans/<slug>.md`
 - **No** - discard or revise based on feedback
 
 ### 7. Queue or stage
 
 Ask the user: **"Add this directly to the task queue, or leave it staged in plans/ for batch review?"**
 
-- **Queue now** - convert the plan into a task JSON entry (same schema as `/rawr-add-task`) and append to `tasks.json` using the safe write pattern (write to `.tmp`, validate, `mv`). Delete the plan file from `plans/` after writing.
+- **Queue now** - convert the plan into a task JSON entry (same schema as `/rawr-add-task`) and pipe it to `scripts/append-task.sh`. Delete the plan file from `plans/` after writing.
 - **Stage** - leave it in `plans/`. Tell the user: "Run `/rawr-approve-plans` when you're ready to promote it to the task queue."
