@@ -132,6 +132,7 @@ Use this exact format for each plan file:
 ## Meta
 - **priority:** <1-3, where 1 is highest>
 - **project:** <folder-name under projects/>
+- **addedBy:** agent
 
 Do NOT include commit steps - the execution agent handles commits separately.
 For any notes.md entries you converted to plans, remove only those lines from notes.md. Leave all other content untouched.

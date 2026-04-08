@@ -63,6 +63,7 @@ Write a plan file matching the format used by `run-planner`:
 
 - **priority:** <1-3, where 1 is highest>
 - **project:** <folder-name under projects/>
+- **addedBy:** user
 ```
 
 Guidelines:

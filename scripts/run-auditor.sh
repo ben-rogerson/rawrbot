@@ -89,21 +89,34 @@ Assign each plan ONE decision:
 
 Be conservative: when in doubt prefer HOLD over APPROVE or CANCEL.
 
-STEP 2 - APPROVE STRONG PLANS
+STEP 2 - ENHANCE AGENT-GENERATED PLANS
+Before extracting, check each APPROVE plan's Meta section for the addedBy field.
+
+Skip plans where addedBy is "user" — they were shaped interactively and don't need enhancement.
+
+For each plan where addedBy is "agent" (or the field is absent):
+- Read plans/<slug>.md
+- Assess: are steps concrete and actionable (scaffold, install, write, deploy — not vague like "set up", "handle", "build")? Does the plan cover init, implementation, AI integration (if applicable), and deployment? Is the description self-contained? Is the priority justified?
+- If improvements are needed, write the enhanced version back to plans/<slug>.md
+- Note what changed (or "no changes needed") — include this in the validation summary
+
+Only fix what is clearly wrong. Do not restructure sound plans.
+
+STEP 3 - APPROVE STRONG PLANS
 If any plans are marked APPROVE, run this single command with all approved slugs:
 
 bash scripts/extract-plans.sh <slug1> [<slug2> ...]
 
 Skip this step entirely if nothing is approved.
 
-STEP 3 - CANCEL WEAK PLANS
+STEP 4 - CANCEL WEAK PLANS
 For each plan marked CANCEL, move it:
 
 mkdir -p plans/cancelled && mv plans/<slug>.md plans/cancelled/
 
 Skip this step entirely if nothing is cancelled.
 
-STEP 4 - WRITE VALIDATION SUMMARY
+STEP 5 - WRITE VALIDATION SUMMARY
 Append this section to {memory_file}:
 
 ## Idea validation - {today}
@@ -111,7 +124,7 @@ Append this section to {memory_file}:
 Staged: <N>  |  Approved: <N>  |  Cancelled: <N>  |  On hold: <N>
 
 Approved:
-- <slug>: <one-line reason>
+- <slug>: <one-line reason> [enhanced: <what changed> | no changes needed]
 
 Cancelled:
 - <slug>: <one-line reason>
@@ -121,7 +134,7 @@ On hold (needs human review):
 
 Omit any section that has no entries.
 
-STEP 5 - LOG TO PROGRESS
+STEP 6 - LOG TO PROGRESS
 Append a single concise line to memory/progress.txt:
 auditor: <N> approved, <N> cancelled, <N> held — <brief summary of what was acted on>"""
 
