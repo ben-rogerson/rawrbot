@@ -24,3 +24,4 @@ env.example
 
 # Claude stuff
 .claude/settings.local.json
+.claude/skills/chromecast/
