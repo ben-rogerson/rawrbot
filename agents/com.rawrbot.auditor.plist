@@ -3,49 +3,29 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.rawrbot.plan-tick</string>
+	<string>com.rawrbot.auditor</string>
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/ben/Projects/work/scripts/run-plan.sh</string>
+		<string>/Users/ben/Projects/work/scripts/run-auditor.sh</string>
 	</array>
 
 	<key>StartCalendarInterval</key>
 	<array>
-		<!-- 7am Friday -->
+		<!-- 6:30am daily (before worker at 7am, so approved plans are ready same day) -->
 		<dict>
-			<key>Weekday</key>
-			<integer>5</integer>
 			<key>Hour</key>
-			<integer>7</integer>
-			<key>Minute</key>
-			<integer>0</integer>
-		</dict>
-		<!-- 7am Saturday -->
-		<dict>
-			<key>Weekday</key>
 			<integer>6</integer>
-			<key>Hour</key>
-			<integer>7</integer>
 			<key>Minute</key>
-			<integer>0</integer>
-		</dict>
-		<!-- 7am Sunday -->
-		<dict>
-			<key>Weekday</key>
-			<integer>0</integer>
-			<key>Hour</key>
-			<integer>7</integer>
-			<key>Minute</key>
-			<integer>0</integer>
+			<integer>30</integer>
 		</dict>
 	</array>
 
 	<key>StandardOutPath</key>
-	<string>/Users/ben/Projects/work/cron.log</string>
+	<string>/Users/ben/Projects/work/rawr.log</string>
 
 	<key>StandardErrorPath</key>
-	<string>/Users/ben/Projects/work/cron.log</string>
+	<string>/Users/ben/Projects/work/rawr.log</string>
 
 	<key>WorkingDirectory</key>
 	<string>/Users/ben/Projects/work</string>

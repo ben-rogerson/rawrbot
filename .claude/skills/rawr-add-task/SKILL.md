@@ -63,7 +63,7 @@ Use the gathered info to produce entries matching the richer schema used in task
 
 - `id`: lowercase, hyphens only, max 40 chars; append `-2`, `-3` if slug already exists
 - `description`: complete enough for the agent to start without asking questions
-- `steps`: ordered, specific; do not include commit steps (the run-task agent handles commits separately)
+- `steps`: ordered, specific; do not include commit steps (the worker agent handles commits separately)
 - `reasoning`: why the task is valuable and what "done" looks like
 - `priority`: 1 = highest; look at existing tasks to assign relative priority
 - `project`: the folder name under subfolder /work/ (required, even if folder doesn't exist yet)

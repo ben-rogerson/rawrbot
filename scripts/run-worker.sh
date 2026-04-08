@@ -93,16 +93,16 @@ with open(prompt_file, "w") as f:
 PYEOF
 
 cd "${WORKDIR}"
-echo "run-task: starting ($(date '+%Y-%m-%d %H:%M'))"
+echo "run-worker: starting ($(date '+%Y-%m-%d %H:%M'))"
 OUTPUT=$(claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")")
 
 # Only notify if a task was actually executed (not when all tasks are already complete)
 if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then
-  echo "run-task: all tasks already complete, nothing to do"
+  echo "run-worker: all tasks already complete, nothing to do"
   exit 0
 fi
 
-echo "run-task: task executed"
+echo "run-worker: task executed"
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
   MSG=$(grep -v '^$' "${WORKDIR}/memory/progress.txt" | tail -1)

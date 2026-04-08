@@ -5,13 +5,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLIST_DIR="${SCRIPT_DIR}/../launchd"
+PLIST_DIR="${SCRIPT_DIR}/../agents"
 TARGET_DIR="${HOME}/Library/LaunchAgents"
 
 AGENTS=(
-  com.rawrbot.task-tick
-  com.rawrbot.plan-tick
-  com.rawrbot.validate-tick
+  com.rawrbot.worker
+  com.rawrbot.planner
+  com.rawrbot.auditor
 )
 
 install_agent() {

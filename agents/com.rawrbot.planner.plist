@@ -3,30 +3,16 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.rawrbot.task-tick</string>
+	<string>com.rawrbot.planner</string>
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/ben/Projects/work/scripts/run-task.sh</string>
+		<string>/Users/ben/Projects/work/scripts/run-planner.sh</string>
 	</array>
 
 	<key>StartCalendarInterval</key>
 	<array>
-		<!-- Hourly on Saturday -->
-		<dict>
-			<key>Weekday</key>
-			<integer>6</integer>
-			<key>Minute</key>
-			<integer>0</integer>
-		</dict>
-		<!-- Hourly on Sunday -->
-		<dict>
-			<key>Weekday</key>
-			<integer>0</integer>
-			<key>Minute</key>
-			<integer>0</integer>
-		</dict>
-		<!-- 7am Monday-Friday -->
+		<!-- 7am Monday -->
 		<dict>
 			<key>Weekday</key>
 			<integer>1</integer>
@@ -35,30 +21,7 @@
 			<key>Minute</key>
 			<integer>0</integer>
 		</dict>
-		<dict>
-			<key>Weekday</key>
-			<integer>2</integer>
-			<key>Hour</key>
-			<integer>7</integer>
-			<key>Minute</key>
-			<integer>0</integer>
-		</dict>
-		<dict>
-			<key>Weekday</key>
-			<integer>3</integer>
-			<key>Hour</key>
-			<integer>7</integer>
-			<key>Minute</key>
-			<integer>0</integer>
-		</dict>
-		<dict>
-			<key>Weekday</key>
-			<integer>4</integer>
-			<key>Hour</key>
-			<integer>7</integer>
-			<key>Minute</key>
-			<integer>0</integer>
-		</dict>
+		<!-- 7am Friday -->
 		<dict>
 			<key>Weekday</key>
 			<integer>5</integer>
@@ -67,13 +30,31 @@
 			<key>Minute</key>
 			<integer>0</integer>
 		</dict>
+		<!-- 7am Saturday -->
+		<dict>
+			<key>Weekday</key>
+			<integer>6</integer>
+			<key>Hour</key>
+			<integer>7</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
+		<!-- 7am Sunday -->
+		<dict>
+			<key>Weekday</key>
+			<integer>0</integer>
+			<key>Hour</key>
+			<integer>7</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
 	</array>
 
 	<key>StandardOutPath</key>
-	<string>/Users/ben/Projects/work/cron.log</string>
+	<string>/Users/ben/Projects/work/rawr.log</string>
 
 	<key>StandardErrorPath</key>
-	<string>/Users/ben/Projects/work/cron.log</string>
+	<string>/Users/ben/Projects/work/rawr.log</string>
 
 	<key>WorkingDirectory</key>
 	<string>/Users/ben/Projects/work</string>

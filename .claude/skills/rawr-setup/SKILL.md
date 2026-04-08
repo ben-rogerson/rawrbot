@@ -115,7 +115,7 @@ Then run `./scripts/launchd.sh status` to confirm they loaded.
 
 If no, tell the user they can install later with `./scripts/launchd.sh install`.
 
-The plist files in `launchd/` define the schedules. The user can edit them and re-run `./scripts/launchd.sh install` to apply changes.
+The plist files in `agents/` define the schedules. The user can edit them and re-run `./scripts/launchd.sh install` to apply changes.
 
 ### 8. Summary
 
@@ -123,5 +123,5 @@ Print a checklist of what was created/skipped, and remind the user:
 
 - Edit `goals.md` to describe what they want built
 - Add ideas to `notes.md` to guide the tasks the agent will generate
-- Use the `/rawr-run-plan` skill in Claude Code to generate tasks
+- Use the `/rawr-run-planner` skill in Claude Code to generate tasks
 - Use the `/rawr-add-task` skill in Claude Code to queue tasks

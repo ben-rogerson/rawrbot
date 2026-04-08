@@ -19,7 +19,7 @@ touch "${WORKDIR}/${MEMORY_FILE}"
 # Exit early if no staged plans
 STAGED_COUNT=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | wc -l | tr -d ' ')
 if [ "$STAGED_COUNT" -eq 0 ]; then
-  echo "run-validate: no staged plans, nothing to do"
+  echo "run-auditor: no staged plans, nothing to do"
   exit 0
 fi
 
@@ -123,19 +123,19 @@ Omit any section that has no entries.
 
 STEP 5 - LOG TO PROGRESS
 Append a single concise line to memory/progress.txt:
-validate: <N> approved, <N> cancelled, <N> held — <brief summary of what was acted on>"""
+auditor: <N> approved, <N> cancelled, <N> held — <brief summary of what was acted on>"""
 
 with open(prompt_file, "w") as f:
     f.write(prompt)
 PYEOF
 
 cd "${WORKDIR}"
-echo "run-validate: starting ($(date '+%Y-%m-%d %H:%M')) - ${STAGED_COUNT} staged plan(s)"
+echo "run-auditor: starting ($(date '+%Y-%m-%d %H:%M')) - ${STAGED_COUNT} staged plan(s)"
 claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
-echo "run-validate: done"
+echo "run-auditor: done"
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
-  MSG=$(grep '^validate:' "${WORKDIR}/memory/progress.txt" 2>/dev/null | tail -1 || echo "validate: completed")
+  MSG=$(grep '^auditor:' "${WORKDIR}/memory/progress.txt" 2>/dev/null | tail -1 || echo "auditor: completed")
   curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
     --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
     --data-urlencode "text=${MSG}" > /dev/null || true

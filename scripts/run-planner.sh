@@ -12,7 +12,7 @@ MEMORY_FILE="memory/${TODAY}.md"
 
 # goals.md is required - abort if missing
 if [ ! -f "${WORKDIR}/goals.md" ]; then
-  echo "[run-plan] ERROR: goals.md not found. Aborting." >&2
+  echo "[run-planner] ERROR: goals.md not found. Aborting." >&2
   exit 1
 fi
 
