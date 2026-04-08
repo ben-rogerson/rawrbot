@@ -5,7 +5,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLIST_DIR="${SCRIPT_DIR}/../agents"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PLIST_DIR="${REPO_DIR}/agents"
 TARGET_DIR="${HOME}/Library/LaunchAgents"
 
 AGENTS=(
@@ -23,7 +24,8 @@ install_agent() {
     return
   fi
   launchctl bootout "gui/$(id -u)/${agent}" 2>/dev/null || true
-  ln -sf "$src" "$dst"
+  rm -f "$dst"
+  sed -e "s|__REPO_DIR__|${REPO_DIR}|g" -e "s|__HOME__|${HOME}|g" "$src" > "$dst"
   launchctl bootstrap "gui/$(id -u)" "$dst"
   echo "OK    ${agent}"
 }

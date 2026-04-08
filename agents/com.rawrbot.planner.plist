@@ -7,7 +7,7 @@
 
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/ben/Projects/work/scripts/run-planner.sh</string>
+		<string>__REPO_DIR__/scripts/run-planner.sh</string>
 	</array>
 
 	<key>StartCalendarInterval</key>
@@ -51,18 +51,18 @@
 	</array>
 
 	<key>StandardOutPath</key>
-	<string>/Users/ben/Projects/work/rawr.log</string>
+	<string>__REPO_DIR__/rawr.log</string>
 
 	<key>StandardErrorPath</key>
-	<string>/Users/ben/Projects/work/rawr.log</string>
+	<string>__REPO_DIR__/rawr.log</string>
 
 	<key>WorkingDirectory</key>
-	<string>/Users/ben/Projects/work</string>
+	<string>__REPO_DIR__</string>
 
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/Users/ben/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+		<string>__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
 	</dict>
 </dict>
 </plist>
