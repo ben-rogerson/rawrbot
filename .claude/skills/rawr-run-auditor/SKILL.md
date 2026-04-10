@@ -13,14 +13,13 @@ Run `scripts/list-plans.sh`. If the output is "No staged plans.", tell the user 
 
 ### 2. Display each plan
 
-Format the `list-plans.sh` output as a markdown table with columns: **#**, **Title**, **Project**, **Priority**, **Description** (truncated to ~250 chars).
+Format the `list-plans.sh` output as a markdown table with columns: **#**, **Title**, **Description** (truncated to ~250 chars).
 
 ### 3. Give your take and ask what to approve
 
 After the table, immediately give your own recommendation without waiting to be asked:
 
 - Flag any obvious duplicates (same concept, different slug)
-- Group by priority and note which are the clearest wins
 - Suggest a shortlist to approve and which to defer/cancel, with brief reasoning
 
 Then ask: "Which would you like to approve?"
@@ -28,47 +27,28 @@ Then ask: "Which would you like to approve?"
 - If the user wants to cancel specific plans, note their slugs
 - If the user wants to edit fields, apply those changes to the task being built
 
-### 4. Review and enhance agent-generated plans
+### 4. Hand off to the auditor script
 
-For each approved plan, check its `addedBy` field in the `## Meta` section.
-
-**Skip** plans where `addedBy: user` — they were already shaped through the add-plan interview.
-
-**For each `addedBy: agent` plan (or plans missing the field):**
-
-4a. Use TaskCreate to add: "Review and enhance: `<slug>`"
-
-4b. Use Read to load `plans/<slug>.md`, then assess:
-- **Steps are concrete** - each names a real action (scaffold, install, write, deploy), not a vague directive ("set up", "handle", "build")
-- **Full lifecycle** - covers init, implementation, AI integration (if applicable), and deployment
-- **Description is self-contained** - what and why are clear from the opening paragraph alone
-- **Priority is justified** - priority 1 implies urgency or dependency
-- **Steps match the description** - no obvious gaps between the promise and the steps
-
-If fixes are needed, use Edit to make targeted improvements in-place. Do not restructure a fundamentally sound plan - only fix what is clearly wrong or missing.
-
-4c. Use TaskUpdate to mark the review task complete. Report one line per plan: what changed, or "no changes needed".
-
-### 5. Extract approved plans
-
-Run the extract script with the slugs (filenames without `.md`) of the approved plans:
+Build the command from the user's decisions and run it **in the background** using `run_in_background: true` on the Bash tool:
 
 ```bash
-bash scripts/extract-plans.sh <slug1> [<slug2> ...]
+REPO=$(git rev-parse --show-toplevel); . ~/.zshrc 2>/dev/null; "$REPO/scripts/run-auditor.sh" --approve slug1,slug2 --cancel slug3 2>&1 | tee -a "$REPO/rawr.log"
 ```
 
-The script parses each plan file, appends entries to `tasks.json` (safe write via tmp), and moves approved plan files to `plans/approved/`.
+- Omit `--approve` if nothing was approved
+- Omit `--cancel` if nothing was cancelled
+- If the user only wants to hold everything, skip the script entirely - staged plans left untouched stay in `plans/`
 
-### 6. Move explicitly cancelled plans
+### 5. Monitor progress
 
-If the user asked to cancel specific plans, move only those to `plans/cancelled/`:
+Immediately after launching, start a Monitor watching rawr.log for auditor progress lines:
 
 ```bash
-mkdir -p plans/cancelled && mv plans/<slug>.md plans/cancelled/
+REPO=$(git rev-parse --show-toplevel); tail -f "$REPO/rawr.log" | grep --line-buffered "run-auditor:"
 ```
 
-Do not move any plans the user did not explicitly ask to cancel. Unapproved plans that weren't cancelled stay in `plans/` untouched.
+Set timeout to 300000ms. Tell the user: "Auditor is running - I'll update you as it progresses. Feel free to ask questions while it runs."
 
-### 7. Confirm
+Relay each monitor event to the user as it arrives. When you see `run-auditor: done`, stop monitoring and summarise what was approved, cancelled, and extracted into tasks.json.
 
-Show the user what was added: count of tasks, their ids, priorities, and projects. Note any agent plans that were enhanced and any explicitly cancelled plans.
+The script handles plan enhancement, extraction into `tasks.json`, archiving cancelled plans, logging, and the Telegram notification.

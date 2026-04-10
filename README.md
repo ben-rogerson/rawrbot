@@ -46,17 +46,17 @@ flowchart TD
 
 RawrBot operates automatically, but you can also trigger operations manually with the following skills:
 
-| I want to...                       | Use this              |
-| :--------------------------------- | :-------------------- |
-| 💭 Dump a vague idea for later     | Add to `notes.md`     |
-| ✏️ Shape an idea into a plan       | `/rawr-add-plan`      |
-| ⚡ Queue exact work immediately    | `/rawr-add-task`      |
-| 👀 Review and approve staged plans | `/rawr-run-auditor`   |
-| 🤖 Trigger the planner manually    | `/rawr-run-planner`   |
-| ▶️ Execute the next task manually  | `/rawr-run-worker`    |
-| 📊 Check system status             | `/rawr-status`        |
-| 📝 Generate a project README       | `/rawr-create-readme` |
-| 🔧 First-time workspace setup      | `/rawr-setup`         |
+| I want to...                       | Use this                     |
+| :--------------------------------- | :--------------------------- |
+| 💭 Dump a vague idea for later     | Add to `notes.md`            |
+| ✏️ Shape an idea into a plan       | `/rawr-add-plan`             |
+| ⚡ Queue exact work immediately    | `/rawr-add-task`             |
+| 👀 Review and approve staged plans | `/rawr-run-auditor`          |
+| 🤖 Trigger the planner manually    | `/rawr-run-planner`          |
+| ▶️ Execute a task manually         | `/rawr-run-worker [task-id]` |
+| 📊 Check system status             | `/rawr-status`               |
+| 📝 Generate a project README       | `/rawr-create-readme`        |
+| 🔧 First-time workspace setup      | `/rawr-setup`                |
 
 ## 🕹️ Steering the Planning Agent
 

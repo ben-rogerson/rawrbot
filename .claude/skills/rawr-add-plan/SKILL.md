@@ -18,7 +18,6 @@ For each idea, assess what's missing from this list:
 - **Goal / why** - what problem does this solve or what outcome does it achieve?
 - **What "done" looks like** - how will you know it's finished?
 - **Approach** - any specific tech stack, file paths, or constraints?
-- **Priority** - how urgent is this relative to existing work?
 
 ### 2. Ask clarifying questions
 
@@ -61,7 +60,6 @@ Write a plan file matching the format used by `run-planner`:
 
 ## Meta
 
-- **priority:** <1-3, where 1 is highest>
 - **project:** <folder-name under projects/>
 - **addedBy:** user
 ```

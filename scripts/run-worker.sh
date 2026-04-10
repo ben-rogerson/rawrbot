@@ -4,6 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/../.env" ] && source "${SCRIPT_DIR}/../.env"
 WORKDIR="${WORKDIR:?WORKDIR must be set in .env}"
+TASK_ID="${1:-}"
 TODAY=$(date +%Y-%m-%d)
 MEMORY_FILE="memory/${TODAY}.md"
 
@@ -13,14 +14,16 @@ touch "${WORKDIR}/${MEMORY_FILE}"
 
 # Build prompt via python to avoid shell quoting issues with file contents
 PROMPT_FILE=$(mktemp)
-trap 'rm -f "$PROMPT_FILE"' EXIT
+TMPOUT=$(mktemp)
+trap 'rm -f "$PROMPT_FILE" "$TMPOUT"' EXIT
 
-python3 - "$WORKDIR" "$MEMORY_FILE" "$PROMPT_FILE" <<'PYEOF'
+python3 - "$WORKDIR" "$MEMORY_FILE" "$PROMPT_FILE" "$TASK_ID" <<'PYEOF'
 import sys, os
 
 workdir = sys.argv[1]
 memory_file = sys.argv[2]
 prompt_file = sys.argv[3]
+task_id = sys.argv[4] if len(sys.argv) > 4 else ""
 
 def read_file(path, default="(empty)"):
     try:
@@ -42,6 +45,19 @@ daily_memory = read_file(os.path.join(workdir, memory_file))
 tasks_json = read_file(os.path.join(workdir, "tasks.json"), "[]")
 progress = tail_file(os.path.join(workdir, "memory/progress.txt"))
 
+if task_id:
+    task_selection = (
+        f"Execute the task with id '{task_id}'. "
+        f"If that id is not present in tasks.json, output <promise>NOT_FOUND</promise> and stop. "
+        f"If found but already complete (completedAt is non-null), output <promise>COMPLETE</promise> and stop. "
+        f"Otherwise execute it."
+    )
+else:
+    task_selection = (
+        "Pick the highest-priority task from tasks.json where completedAt is null. "
+        "Priority is array order - first incomplete task wins."
+    )
+
 prompt = f"""You are an autonomous agent working in {workdir}. Here is your context:
 
 --- memory/index.md ---
@@ -59,7 +75,7 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
 ---
 
 1. Review the context above.
-2. Pick the highest-priority task from tasks.json where completedAt is null. Priority is array order - first incomplete task wins.
+2. {task_selection}
    When marking a task complete, match it by its "id" field. If a task has no "id" field, match by description. Set completedAt to the current ISO 8601 timestamp on the matched task only.
 3. Execute the task. New projects go in projects/<name>/.
 4. Run relevant checks (typecheck, tests) if the task involves code.
@@ -94,7 +110,19 @@ PYEOF
 
 cd "${WORKDIR}"
 echo "run-worker: starting ($(date '+%Y-%m-%d %H:%M'))"
-OUTPUT=$(claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")")
+[ -n "$TASK_ID" ] && echo "run-worker: targeting task '$TASK_ID'"
+echo "run-worker: calling claude (task execution may take several minutes)..."
+claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")" | tee "$TMPOUT"
+OUTPUT=$(cat "$TMPOUT")
+echo "run-worker: claude finished, processing result..."
+
+# Task ID not found - list pending tasks as a hint
+if echo "$OUTPUT" | grep -q '<promise>NOT_FOUND</promise>'; then
+  PENDING=$(python3 -c "import json; [print(t['id']) for t in json.load(open('tasks.json')) if not t.get('completedAt')]" 2>/dev/null)
+  echo "run-worker: task '$TASK_ID' not found. Pending tasks:"
+  echo "$PENDING" | sed 's/^/  /'
+  exit 1
+fi
 
 # Only notify if a task was actually executed (not when all tasks are already complete)
 if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then

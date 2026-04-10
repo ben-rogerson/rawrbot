@@ -130,7 +130,6 @@ Use this exact format for each plan file:
 3. <verify the change works>
 
 ## Meta
-- **priority:** <1-3, where 1 is highest>
 - **project:** <folder-name under projects/>
 - **addedBy:** agent
 
@@ -166,7 +165,10 @@ with open(prompt_file, "w") as f:
 PYEOF
 
 cd "${WORKDIR}"
+echo "run-planner: starting ($(date '+%Y-%m-%d %H:%M'))"
+echo "run-planner: calling claude (planning may take 1-2 minutes)..."
 claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
+echo "run-planner: done"
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
   PLAN_COUNT=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | wc -l | tr -d ' ')

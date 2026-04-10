@@ -56,10 +56,8 @@ def parse_plan(slug):
                 steps.append(m.group(1).strip())
 
     # Meta fields
-    priority_match = re.search(r'\*\*priority:\*\*\s*(\d+)', content)
     project_match = re.search(r'\*\*project:\*\*\s*(\S+)', content)
     added_by_match = re.search(r'\*\*addedBy:\*\*\s*(\S+)', content)
-    priority = int(priority_match.group(1)) if priority_match else 2
     project = project_match.group(1).strip() if project_match else ""
     added_by = added_by_match.group(1).strip() if added_by_match else "agent"
 
@@ -68,7 +66,6 @@ def parse_plan(slug):
         "description": description,
         "steps": steps,
         "reasoning": description,
-        "priority": priority,
         "project": project,
         "completedAt": None,
         "addedBy": added_by,
@@ -92,7 +89,7 @@ for slug in slugs:
     plan = parse_plan(slug)
     tasks.append(plan)
     added.append(slug)
-    print(f"[extract-plans] Queued {slug} (priority {plan['priority']}, project {plan['project']})")
+    print(f"[extract-plans] Queued {slug} (project {plan['project']})")
 
 # Safe write
 with open(tasks_tmp, "w") as f:
