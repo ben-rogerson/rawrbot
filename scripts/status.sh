@@ -21,13 +21,13 @@ for t in pending:
 
 task_line = f"Tasks:    {len(pending)} pending"
 if priority_counts:
-    breakdown = ', '.join(f"{v} priority-{k}" for k, v in sorted(priority_counts.items()))
+    breakdown = ', '.join(f"{v} {k}" for k, v in sorted(priority_counts.items()))
     task_line += f" ({breakdown})"
 print(task_line)
 
 if pending:
     for t in pending:
-        print(f"          [{t['id']}] p{t.get('priority','?')} — {t.get('project','?')}")
+        print(f"          [{t['id']}] {t.get('priority','?')} — {t.get('project','?')}")
 
 # Staged plans
 plans = sorted(glob.glob(os.path.join(repo, 'plans', '*.md')))

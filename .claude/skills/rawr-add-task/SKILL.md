@@ -53,7 +53,7 @@ Use the gathered info to produce entries matching the richer schema used in task
   "description": "Full, unambiguous description the agent can act on directly.",
   "steps": ["Concrete step 1", "Concrete step 2", "Verify the change works"],
   "reasoning": "Why this task matters and what success looks like.",
-  "priority": 1,
+  "priority": "medium",
   "project": "folder-name",
   "completedAt": null,
   "addedBy": "user",
@@ -65,7 +65,7 @@ Use the gathered info to produce entries matching the richer schema used in task
 - `description`: complete enough for the agent to start without asking questions
 - `steps`: ordered, specific; do not include commit steps (the worker agent handles commits separately)
 - `reasoning`: why the task is valuable and what "done" looks like
-- `priority`: 1 = highest; look at existing tasks to assign relative priority
+- `priority`: `"high"`, `"medium"`, or `"low"`; look at existing tasks and current goals to assign relative priority
 - `project`: the folder name under subfolder /work/ (required, even if folder doesn't exist yet)
 - `completedAt`: always `null`
 - `addedBy`: `"user"`

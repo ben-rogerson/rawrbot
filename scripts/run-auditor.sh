@@ -114,11 +114,11 @@ Follow these steps exactly:
 
 {step1}
 
-STEP 2 - ENHANCE AGENT-GENERATED PLANS
-Before extracting, check each APPROVE plan's Meta section for the addedBy field.
+STEP 2 - ENHANCE AND PRIORITISE APPROVED PLANS
+For each APPROVE plan:
 
+**Enhancement (agent-generated plans only):**
 Skip plans where addedBy is "user" — they were shaped interactively and don't need enhancement.
-
 For each plan where addedBy is "agent" (or the field is absent):
 - Read plans/<slug>.md
 - Assess: are steps concrete and actionable (scaffold, install, write, deploy — not vague like "set up", "handle", "build")? Does the plan cover init, implementation, AI integration (if applicable), and deployment? Is the description self-contained?
@@ -126,6 +126,16 @@ For each plan where addedBy is "agent" (or the field is absent):
 - Note what changed (or "no changes needed") — include this in the validation summary
 
 Only fix what is clearly wrong. Do not restructure sound plans.
+
+**Priority assignment (all approved plans):**
+For each APPROVE plan (regardless of addedBy), assign a priority level and write it into the plan's Meta section as `**priority:** <high|medium|low>`.
+
+Use these criteria:
+- **high**: directly unblocks other work, aligns with top goals.md priorities, or has clear immediate value
+- **medium**: useful but not urgent — fits goals but is not a top priority right now
+- **low**: exploratory, nice-to-have, or depends on other incomplete work
+
+Add the line immediately after the existing Meta fields (e.g. after `**addedBy:**`).
 
 STEP 3 - WRITE DECISIONS JSON FILE
 Write your final decisions as a JSON object to the file: {decisions_file}
@@ -147,7 +157,7 @@ Append this section to {memory_file}:
 Staged: <N>  |  Approved: <N>  |  Cancelled: <N>  |  On hold: <N>
 
 Approved:
-- <slug>: <one-line reason> [enhanced: <what changed> | no changes needed]
+- <slug> [<priority>]: <one-line reason> [enhanced: <what changed> | no changes needed]
 
 Cancelled:
 - <slug>: <one-line reason>

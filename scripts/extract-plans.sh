@@ -58,8 +58,10 @@ def parse_plan(slug):
     # Meta fields
     project_match = re.search(r'\*\*project:\*\*\s*(\S+)', content)
     added_by_match = re.search(r'\*\*addedBy:\*\*\s*(\S+)', content)
+    priority_match = re.search(r'\*\*priority:\*\*\s*(\S+)', content)
     project = project_match.group(1).strip() if project_match else ""
     added_by = added_by_match.group(1).strip() if added_by_match else "agent"
+    priority = priority_match.group(1).strip() if priority_match else "medium"
 
     return {
         "id": slug,
@@ -67,6 +69,7 @@ def parse_plan(slug):
         "steps": steps,
         "reasoning": description,
         "project": project,
+        "priority": priority,
         "completedAt": None,
         "addedBy": added_by,
         "addedAt": now,
