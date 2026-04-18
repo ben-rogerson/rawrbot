@@ -93,6 +93,11 @@ catalog_section = f"\n--- memory/project-catalog.md ---\n{catalog_md}\n" if cata
 with open(os.path.join(workdir, 'prompts', 'planner.md')) as f:
     template = f.read()
 
+if template.startswith('---'):
+    parts = template.split('---', 2)
+    if len(parts) >= 3:
+        template = parts[2].lstrip('\n')
+
 replacements = {
     '<<WORKDIR>>': workdir,
     '<<TODAY>>': today,
