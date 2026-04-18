@@ -65,20 +65,26 @@ def parse_plan(slug):
 
     return {
         "id": slug,
-        "description": description,
-        "steps": steps,
-        "reasoning": description,
-        "project": project,
-        "priority": priority,
+        "state": "draft",
+        "draft": {
+            "id": slug,
+            "description": description,
+            "roughSteps": steps,
+            "source": "plan",
+            "project": project,
+            "priority": priority,
+        },
+        "attempts": [],
+        "createdAt": now,
+        "childIds": [],
         "completedAt": None,
-        "addedBy": added_by,
-        "addedAt": now,
     }
 
 # Load existing tasks
 try:
     with open(tasks_path) as f:
-        tasks = json.load(f)
+        data = json.load(f)
+    tasks = data.get('tasks', data) if isinstance(data, dict) else data
 except FileNotFoundError:
     tasks = []
 
@@ -96,7 +102,7 @@ for slug in slugs:
 
 # Safe write
 with open(tasks_tmp, "w") as f:
-    json.dump(tasks, f, indent=2)
+    json.dump({"tasks": tasks}, f, indent=2)
     f.write("\n")
 
 # Validate
