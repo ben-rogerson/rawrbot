@@ -112,7 +112,7 @@ echo "run-worker: claude finished, processing result..."
 
 # Task ID not found - list pending tasks as a hint
 if echo "$OUTPUT" | grep -q '<promise>NOT_FOUND</promise>'; then
-  PENDING=$(python3 -c "import json; [print(t['id']) for t in json.load(open('tasks.json')) if not t.get('completedAt')]" 2>/dev/null)
+  PENDING=$(python3 -c "import json; data=json.load(open('tasks.json')); tasks=data.get('tasks',data) if isinstance(data,dict) else data; [print(t['id']) for t in tasks if not t.get('completedAt')]" 2>/dev/null)
   echo "run-worker: task '$TASK_ID' not found. Pending tasks:"
   echo "$PENDING" | sed 's/^/  /'
   exit 1
