@@ -27,6 +27,30 @@ PROJECTS_LIST=$(ls -d "${WORKDIR}/projects"/*/ 2>/dev/null | xargs -I{} basename
 mkdir -p "${WORKDIR}/plans"
 EXISTING_PLANS=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | xargs -I{} basename {} .md | tr '\n' ', ' || echo "(none)")
 
+log_event() {
+  local agent="$1" event="$2" detail="${3:-}"
+  RAWR_AGENT="$agent" RAWR_EVENT="$event" RAWR_DETAIL="$detail" \
+  python3 -c "
+import json, datetime, os
+entry = {'ts': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+         'agent': os.environ['RAWR_AGENT'], 'event': os.environ['RAWR_EVENT'],
+         'detail': os.environ.get('RAWR_DETAIL', '')}
+with open('${WORKDIR}/rawr-events.log', 'a') as f:
+    f.write(json.dumps(entry) + '\n')
+"
+}
+
+INITIAL_PLAN_COUNT=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | wc -l | tr -d ' ' || echo "0")
+PENDING_COUNT=$(python3 -c "
+import json, sys
+try:
+    data = json.load(open('${WORKDIR}/tasks.json'))
+    tasks = data.get('tasks', data) if isinstance(data, dict) else data
+    print(sum(1 for t in tasks if not t.get('completedAt')))
+except Exception:
+    print(0)
+" 2>/dev/null || echo "0")
+
 # Build prompt via python to avoid shell quoting issues with file contents
 PROMPT_FILE=$(mktemp)
 trap 'rm -f "$PROMPT_FILE"' EXIT
@@ -66,110 +90,48 @@ memory_md = read_file(os.path.join(workdir, "memory/index.md"))
 catalog_md = read_file(os.path.join(workdir, "memory/project-catalog.md"), "")
 catalog_section = f"\n--- memory/project-catalog.md ---\n{catalog_md}\n" if catalog_md else ""
 
-prompt = f"""You are an autonomous planning agent working in {workdir}. Today is {today}.
+with open(os.path.join(workdir, 'prompts', 'planner.md')) as f:
+    template = f.read()
 
-Your job is to review context, generate tasks if the queue is short, self-update your goals document, and write a morning plan summary. You do NOT execute tasks - you only plan.
+replacements = {
+    '<<WORKDIR>>': workdir,
+    '<<TODAY>>': today,
+    '<<MEMORY_FILE>>': memory_file,
+    '<<GOALS_MD>>': goals_md,
+    '<<NOTES_MD>>': notes_md,
+    '<<TASKS_JSON>>': tasks_json,
+    '<<PROGRESS>>': progress,
+    '<<MEMORY_MD>>': memory_md,
+    '<<CATALOG_SECTION>>': catalog_section,
+    '<<PROJECTS_LIST>>': projects_list,
+    '<<EXISTING_PLANS>>': existing_plans,
+    '<<TASKS_TO_GENERATE>>': tasks_to_generate,
+    '<<MAX_PENDING_TASKS>>': max_pending_tasks,
+}
+for placeholder, value in replacements.items():
+    template = template.replace(placeholder, value)
 
---- goals.md ---
-{goals_md}
-
---- notes.md ---
-{notes_md}
-
---- tasks.json ---
-{tasks_json}
-
---- memory/progress.txt (last 100 lines) ---
-{progress}
-
---- memory/index.md ---
-{memory_md}
-{catalog_section}
---- projects/ (top-level directories) ---
-{projects_list}
-
---- plans/ (existing staged plans - avoid name clashes) ---
-{existing_plans}
-
----
-
-Follow these steps exactly:
-
-STEP 1 - VALIDATE tasks.json
-Check that tasks.json above is valid JSON. If it is not valid JSON (and it is not empty), stop immediately and append this to {memory_file}:
-  ## Morning plan - {today}
-  ERROR: tasks.json is invalid JSON. Planning aborted.
-Then exit without making any other changes.
-
-STEP 2 - COUNT PENDING TASKS
-Count tasks in tasks.json where completedAt is null. Call this PENDING_COUNT.
-
-STEP 3 - GENERATE PLANS (only if PENDING_COUNT <= {max_pending_tasks})
-If PENDING_COUNT > {max_pending_tasks}, skip this step and go to STEP 4.
-
-Otherwise, generate between 1 and {tasks_to_generate} new plans. For each plan:
-- Choose work that aligns with goals.md priorities
-- Convert any clearly actionable entries from notes.md into plans
-- Do not repeat work already in tasks.json (check by description similarity)
-- Check the plans/ directory for existing files to avoid name clashes
-
-Write each plan as a SEPARATE markdown file in the plans/ directory.
-Filename: plans/<slug>.md where slug is a short-hyphenated-name (max 5 words).
-
-Use this exact format for each plan file:
-
-# <Plan Title>
-
-<Description of what to build. 1-2 sentences.>
-
-## Reasoning
-
-<Why this work is being prioritised now. Reference goals.md priorities, notes.md entries, or observed patterns. 2-4 sentences.>
-
-## Steps
-1. <concrete step 1>
-2. <concrete step 2>
-3. <verify the change works>
-
-## Meta
-- **project:** <folder-name under projects/>
-- **addedBy:** agent
-
-Do NOT include commit steps - the execution agent handles commits separately.
-For any notes.md entries you converted to plans, remove only those lines from notes.md. Leave all other content untouched.
-
-IMPORTANT: Do NOT read or modify tasks.json. Only write plan files to the plans/ directory.
-
-STEP 4 - UPDATE goals.md (always run)
-Review the progress history and current task patterns. If you observe anything worth recording (e.g. types of tasks that stall, preferences that are emerging, patterns in what gets done), update goals.md under the Self-Evolution section. Only make changes if there is something meaningful to record. Do not make cosmetic edits.
-
-STEP 5 - WRITE MORNING PLAN SUMMARY (always run)
-Append the following to {memory_file}:
-
-If plans were generated in STEP 3:
-  ## Morning plan - {today}
-
-  Plans staged (N) - awaiting review in plans/:
-  1. <slug> - description - reasoning
-  ... (one line per plan)
-
-  (If goals.md was updated, add a line: "goals.md updated: <what changed>")
-
-If PENDING_COUNT > {max_pending_tasks} (plans skipped):
-  ## Morning plan - {today}
-
-  No plans staged - queue already has ${{PENDING_COUNT}} pending tasks.
-
-  (If goals.md was updated, add a line: "goals.md updated: <what changed>")"""
-
-with open(prompt_file, "w") as f:
-    f.write(prompt)
+with open(prompt_file, 'w') as f:
+    f.write(template)
 PYEOF
 
 cd "${WORKDIR}"
 echo "run-planner: starting ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-planner: calling claude (planning may take 1-2 minutes)..."
+log_event "planner" "start" "pending=$PENDING_COUNT initial_plans=$INITIAL_PLAN_COUNT"
 claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
+
+# Handoff validation
+FINAL_PLAN_COUNT=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | wc -l | tr -d ' ' || echo "0")
+if [ "$PENDING_COUNT" -le "$MAX_PENDING_TASKS" ] && [ "$FINAL_PLAN_COUNT" -le "$INITIAL_PLAN_COUNT" ]; then
+  log_event "planner" "error" "expected new plans but none written (pending=$PENDING_COUNT max=$MAX_PENDING_TASKS)"
+  echo "run-planner: WARNING: queue was below cap but no new plans were written" >&2
+elif [ "$PENDING_COUNT" -gt "$MAX_PENDING_TASKS" ]; then
+  log_event "planner" "skip" "queue at $PENDING_COUNT (max $MAX_PENDING_TASKS), no plans generated"
+else
+  NEW_PLANS=$((FINAL_PLAN_COUNT - INITIAL_PLAN_COUNT))
+  log_event "planner" "success" "$NEW_PLANS new plan(s) staged"
+fi
 echo "run-planner: done"
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
