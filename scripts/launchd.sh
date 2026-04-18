@@ -13,6 +13,7 @@ AGENTS=(
   com.rawrbot.worker
   com.rawrbot.planner
   com.rawrbot.auditor
+  com.rawrbot.cleanup
 )
 
 install_agent() {

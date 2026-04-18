@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.rawrbot.cleanup</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>__REPO_DIR__/scripts/cleanup.sh</string>
+	</array>
+
+	<key>StartCalendarInterval</key>
+	<array>
+		<!-- 6am Sunday -->
+		<dict>
+			<key>Weekday</key>
+			<integer>0</integer>
+			<key>Hour</key>
+			<integer>6</integer>
+			<key>Minute</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+
+	<key>StandardOutPath</key>
+	<string>__REPO_DIR__/rawr.log</string>
+
+	<key>StandardErrorPath</key>
+	<string>__REPO_DIR__/rawr.log</string>
+
+	<key>WorkingDirectory</key>
+	<string>__REPO_DIR__</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+	</dict>
+</dict>
+</plist>
