@@ -81,7 +81,7 @@ else:
         "Priority is array order - first incomplete task wins."
     )
 
-with open(os.path.join(workdir, 'prompts', 'worker.md')) as f:
+with open(os.path.join(workdir, 'prompts', 'worker.yaml')) as f:
     template = f.read()
 
 if template.startswith('---'):

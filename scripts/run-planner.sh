@@ -90,7 +90,7 @@ memory_md = read_file(os.path.join(workdir, "memory/index.md"))
 catalog_md = read_file(os.path.join(workdir, "memory/project-catalog.md"), "")
 catalog_section = f"\n--- memory/project-catalog.md ---\n{catalog_md}\n" if catalog_md else ""
 
-with open(os.path.join(workdir, 'prompts', 'planner.md')) as f:
+with open(os.path.join(workdir, 'prompts', 'planner.yaml')) as f:
     template = f.read()
 
 if template.startswith('---'):
