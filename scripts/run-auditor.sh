@@ -28,8 +28,23 @@ touch "${WORKDIR}/${MEMORY_FILE}"
 
 # Exit early if no staged plans
 STAGED_COUNT=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | wc -l | tr -d ' ')
+
+log_event() {
+  local agent="$1" event="$2" detail="${3:-}"
+  RAWR_AGENT="$agent" RAWR_EVENT="$event" RAWR_DETAIL="$detail" \
+  python3 -c "
+import json, datetime, os
+entry = {'ts': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+         'agent': os.environ['RAWR_AGENT'], 'event': os.environ['RAWR_EVENT'],
+         'detail': os.environ.get('RAWR_DETAIL', '')}
+with open('${WORKDIR}/rawr-events.log', 'a') as f:
+    f.write(json.dumps(entry) + '\n')
+"
+}
+
 if [ "$STAGED_COUNT" -eq 0 ]; then
   echo "run-auditor: no staged plans, nothing to do"
+  log_event "auditor" "skip" "no staged plans"
   exit 0
 fi
 
@@ -57,7 +72,6 @@ def read_file(path, default="(empty)"):
     except FileNotFoundError:
         return default
 
-# Read all staged plan files
 plans_dir = os.path.join(workdir, "plans")
 plan_files = sorted(glob.glob(os.path.join(plans_dir, "*.md")))
 plans_sections = []
@@ -65,7 +79,6 @@ for path in plan_files:
     slug = os.path.splitext(os.path.basename(path))[0]
     content = open(path).read()
     plans_sections.append(f"### plans/{slug}.md\n\n{content}")
-
 plans_content = "\n\n---\n\n".join(plans_sections) if plans_sections else "(none)"
 
 goals_md = read_file(os.path.join(workdir, "goals.md"))
@@ -96,95 +109,38 @@ Assign each plan ONE decision:
 
 Be conservative: when in doubt prefer HOLD over APPROVE or CANCEL."""
 
-prompt = f"""You are an autonomous idea validator working in {workdir}. Today is {today}.
+with open(os.path.join(workdir, 'prompts', 'auditor.md')) as f:
+    template = f.read()
 
-Your job is to evaluate staged plan files and make a decision on each one: approve strong plans (add to tasks.json), cancel weak or duplicate ones, and hold ambiguous ones for human review.
+replacements = {
+    '<<WORKDIR>>': workdir,
+    '<<TODAY>>': today,
+    '<<MEMORY_FILE>>': memory_file,
+    '<<GOALS_MD>>': goals_md,
+    '<<TASKS_JSON>>': tasks_json,
+    '<<CATALOG_SECTION>>': catalog_section,
+    '<<STAGED_COUNT>>': staged_count,
+    '<<PLANS_CONTENT>>': plans_content,
+    '<<DECISIONS_FILE>>': decisions_file,
+    '<<STEP1>>': step1,
+}
+for placeholder, value in replacements.items():
+    template = template.replace(placeholder, value)
 
---- goals.md ---
-{goals_md}
-
---- tasks.json (current queue) ---
-{tasks_json}
-{catalog_section}
---- Staged plans ({staged_count} total) ---
-
-{plans_content}
-
----
-
-Follow these steps exactly:
-
-{step1}
-
-STEP 2 - ENHANCE AND PRIORITISE APPROVED PLANS
-For each APPROVE plan:
-
-**Enhancement (agent-generated plans only):**
-Skip plans where addedBy is "user" — they were shaped interactively and don't need enhancement.
-For each plan where addedBy is "agent" (or the field is absent):
-- Read plans/<slug>.md
-- Assess: are steps concrete and actionable (scaffold, install, write, deploy — not vague like "set up", "handle", "build")? Does the plan cover init, implementation, AI integration (if applicable), and deployment? Is the description self-contained?
-- If improvements are needed, write the enhanced version back to plans/<slug>.md
-- Note what changed (or "no changes needed") — include this in the validation summary
-
-Only fix what is clearly wrong. Do not restructure sound plans.
-
-**Priority assignment (all approved plans):**
-For each APPROVE plan (regardless of addedBy), assign a priority level and write it into the plan's Meta section as `**priority:** <high|medium|low>`.
-
-Use these criteria:
-- **high**: directly unblocks other work, aligns with top goals.md priorities, or has clear immediate value
-- **medium**: useful but not urgent — fits goals but is not a top priority right now
-- **low**: exploratory, nice-to-have, or depends on other incomplete work
-
-Add the line immediately after the existing Meta fields (e.g. after `**addedBy:**`).
-
-STEP 3 - WRITE DECISIONS JSON FILE
-Write your final decisions as a JSON object to the file: {decisions_file}
-
-The file must contain only this JSON structure:
-{{"approve": ["slug1", "slug2"], "cancel": ["slug3"], "hold": ["slug4"]}}
-
-Rules:
-- Every staged plan slug must appear in exactly one list
-- Use empty arrays for categories with no entries
-- Do not include the .md extension in slugs
-- Write raw JSON only - no markdown fences, no extra text
-
-STEP 4 - WRITE VALIDATION SUMMARY
-Append this section to {memory_file}:
-
-## Idea validation - {today}
-
-Staged: <N>  |  Approved: <N>  |  Cancelled: <N>  |  On hold: <N>
-
-Approved:
-- <slug> [<priority>]: <one-line reason> [enhanced: <what changed> | no changes needed]
-
-Cancelled:
-- <slug>: <one-line reason>
-
-On hold (needs human review):
-- <slug>: <one-line reason>
-
-Omit any section that has no entries.
-
-STEP 5 - LOG TO PROGRESS
-Append a single concise line to memory/progress.txt:
-auditor: <N> approved, <N> cancelled, <N> held — <brief summary of what was acted on>"""
-
-with open(prompt_file, "w") as f:
-    f.write(prompt)
+with open(prompt_file, 'w') as f:
+    f.write(template)
 PYEOF
 
 cd "${WORKDIR}"
 echo "run-auditor: starting ($(date '+%Y-%m-%d %H:%M')) - ${STAGED_COUNT} staged plan(s)"
 echo "run-auditor: calling claude to evaluate plans (may take 2-3 minutes)..."
+log_event "auditor" "start" "$STAGED_COUNT staged plan(s)"
 claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
 echo "run-auditor: evaluation complete, processing decisions..."
 
 if [ ! -s "$DECISIONS_FILE" ]; then
-  echo "run-auditor: decisions file was not written or is empty" >&2
+  log_event "auditor" "error" "decisions file not written or empty"
+  echo "run-auditor: ERROR: decisions file was not written or is empty" >&2
   exit 1
 fi
 
@@ -217,6 +173,16 @@ for slug in cancelled:
 
 print(f"run-auditor: extracted {len(approved)} plan(s), archived {len(cancelled)} cancelled", flush=True)
 PYEOF2
+
+APPROVED_COUNT=$(python3 -c "
+import json, sys
+try:
+    d = json.load(open('$DECISIONS_FILE'))
+    print(len(d.get('approve', [])))
+except Exception:
+    print('?')
+" 2>/dev/null || echo "?")
+log_event "auditor" "success" "approved=$APPROVED_COUNT of $STAGED_COUNT plans"
 
 echo "run-auditor: done"
 
