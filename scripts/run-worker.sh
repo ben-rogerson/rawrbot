@@ -8,6 +8,26 @@ TASK_ID="${1:-}"
 TODAY=$(date +%Y-%m-%d)
 MEMORY_FILE="memory/${TODAY}.md"
 
+log_event() {
+  local agent="$1" event="$2" detail="${3:-}"
+  python3 -c "
+import json, datetime
+entry = {'ts': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'), 'agent': '$agent', 'event': '$event', 'detail': '$detail'}
+with open('${WORKDIR}/rawr-events.log', 'a') as f:
+    f.write(json.dumps(entry) + '\n')
+"
+}
+
+INITIAL_COMPLETED=$(python3 -c "
+import json, sys
+try:
+    data = json.load(open('${WORKDIR}/tasks.json'))
+    tasks = data.get('tasks', data) if isinstance(data, dict) else data
+    print(sum(1 for t in tasks if t.get('completedAt')))
+except Exception:
+    print(0)
+" 2>/dev/null || echo "0")
+
 # Bootstrap daily memory file if it doesn't exist
 mkdir -p "${WORKDIR}/memory"
 touch "${WORKDIR}/${MEMORY_FILE}"
@@ -58,61 +78,31 @@ else:
         "Priority is array order - first incomplete task wins."
     )
 
-prompt = f"""You are an autonomous agent working in {workdir}. Here is your context:
+with open(os.path.join(workdir, 'prompts', 'worker.md')) as f:
+    template = f.read()
 
---- memory/index.md ---
-{memory_md}
+replacements = {
+    '<<WORKDIR>>': workdir,
+    '<<MEMORY_FILE>>': memory_file,
+    '<<MEMORY_MD>>': memory_md,
+    '<<DAILY_MEMORY>>': daily_memory,
+    '<<TASKS_JSON>>': tasks_json,
+    '<<PROGRESS>>': progress,
+    '<<TASK_SELECTION>>': task_selection,
+}
+for placeholder, value in replacements.items():
+    template = template.replace(placeholder, value)
 
---- {memory_file} ---
-{daily_memory}
-
---- tasks.json ---
-{tasks_json}
-
---- memory/progress.txt (last 50 lines) ---
-{progress}
-
----
-
-1. Review the context above.
-2. {task_selection}
-   When marking a task complete, match it by its "id" field. If a task has no "id" field, match by description. Set completedAt to the current ISO 8601 timestamp on the matched task only.
-3. Execute the task. New projects go in projects/<name>/.
-4. Run relevant checks (typecheck, tests) if the task involves code.
-5. Mark the task complete by setting completedAt to the current ISO 8601 timestamp in tasks.json.
-   CRITICAL - safe write pattern for tasks.json (prevents data loss from pipe truncation):
-     a. Read the current tasks.json contents into memory
-     b. Make the change in memory (set completedAt on the matched task)
-     c. Write the full updated JSON array to tasks.json.tmp
-     d. Verify tasks.json.tmp is valid JSON: python3 -c "import json; json.load(open('tasks.json.tmp'))"
-     e. mv tasks.json.tmp tasks.json
-   NEVER pipe output directly into tasks.json. NEVER use patterns like 'jq ... | tee tasks.json' or 'cat > tasks.json' where the same file is both read source and write target.
-5a. If the task created a new project directory, create a .gitignore in the project root with at minimum: node_modules/, dist/, .tanstack/ (add other entries as appropriate for the project type, e.g. .astro/ for Astro projects, .env for projects with secrets).
-5b. If the task created a new project directory, write a README.md in the project root using this exact structure:
-    - One or two sentences at the top: what it is and why it was built. Frame it as personal interest — curiosity, a problem to solve, something to learn. Never mention employers or portfolios.
-    - ## What it does — bullet points only
-    - ## How it works — a Mermaid diagram explaining key logic or data flow. Use flowchart TD for request/data flows, sequenceDiagram for multi-party interactions, or stateDiagram-v2 for state machines.
-    - ## Getting Started — how to install and run it
-    - ## What I learned — short paragraph
-    - ## Future Improvements — short paragraph
-    - ## Tech — bullet list of key technologies
-    Rules: plain language, no buzzwords, short and scannable, no badges or decorative elements.
-5c. If the task created or significantly modified a project directory (new project, deployment, feature addition, README update), output <scanner>PROJECT:<project-folder-name></scanner> after completing all other steps.
-6. Append to progress.txt: task completed, key decisions, files changed, blockers. Be concise. Sacrifice grammar for concision.
-7. Append to {memory_file}: session summary, key decisions, what to carry forward tomorrow.
-8. If any long-term facts emerged (new project, key decision, user preference), update memory/index.md.
-9. Do NOT commit changes. Do NOT git init the new project.
-Important: Do NOT modify goals.md under any circumstances. goals.md is managed exclusively by the planning agent.
-If all tasks have a non-null completedAt, output <promise>COMPLETE</promise> and stop."""
-
-with open(prompt_file, "w") as f:
-    f.write(prompt)
+with open(prompt_file, 'w') as f:
+    f.write(template)
 PYEOF
 
 cd "${WORKDIR}"
 echo "run-worker: starting ($(date '+%Y-%m-%d %H:%M'))"
 [ -n "$TASK_ID" ] && echo "run-worker: targeting task '$TASK_ID'"
 echo "run-worker: calling claude (task execution may take several minutes)..."
+TARGET="${TASK_ID:-auto}"
+log_event "worker" "start" "targeting task $TARGET"
 claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")" | tee "$TMPOUT"
 OUTPUT=$(cat "$TMPOUT")
 echo "run-worker: claude finished, processing result..."
@@ -128,10 +118,30 @@ fi
 # Only notify if a task was actually executed (not when all tasks are already complete)
 if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then
   echo "run-worker: all tasks already complete, nothing to do"
+  log_event "worker" "skip" "all tasks already complete"
   exit 0
 fi
 
 echo "run-worker: task executed"
+
+# Handoff validation: if no promise tag, verify a task was actually marked complete
+if ! echo "$OUTPUT" | grep -qE '<promise>(COMPLETE|NOT_FOUND)</promise>'; then
+  NEW_COMPLETED=$(python3 -c "
+import json, sys
+try:
+    data = json.load(open('${WORKDIR}/tasks.json'))
+    tasks = data.get('tasks', data) if isinstance(data, dict) else data
+    print(sum(1 for t in tasks if t.get('completedAt')))
+except Exception:
+    print(0)
+" 2>/dev/null || echo "0")
+  if [ "$NEW_COMPLETED" = "$INITIAL_COMPLETED" ]; then
+    log_event "worker" "error" "no promise tag and no task marked complete"
+    echo "run-worker: ERROR: Claude produced no promise tag and did not mark any task complete" >&2
+    exit 1
+  fi
+fi
+log_event "worker" "success" "task $TARGET executed"
 
 SCANNER_SLUGS=$(python3 -c "
 import sys, re
