@@ -27,11 +27,11 @@ def trim_file(path, keep_lines):
     print(f"cleanup: {os.path.basename(path)} - trimmed {removed} lines, kept {keep_lines}")
 
 def delete_old(pattern, days, label):
-    cutoff = datetime.datetime.now() - datetime.timedelta(days=days)
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)
     paths = glob.glob(pattern)
     deleted = 0
     for path in paths:
-        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path))
+        mtime = datetime.datetime.fromtimestamp(os.path.getmtime(path), tz=datetime.timezone.utc)
         if mtime < cutoff:
             os.remove(path)
             deleted += 1
