@@ -1,3 +1,16 @@
+---
+agent: worker
+injected_by: scripts/run-worker.sh
+variables:
+  WORKDIR: absolute path to working directory
+  MEMORY_FILE: path to today's daily memory file (e.g. memory/2026-04-18.md)
+  MEMORY_MD: contents of memory/index.md
+  DAILY_MEMORY: contents of today's memory file
+  TASKS_JSON: full contents of tasks.json
+  PROGRESS: last 50 lines of memory/progress.txt
+  TASK_SELECTION: instruction for which task to pick (auto or specific ID)
+---
+
 You are an autonomous agent working in <<WORKDIR>>. Here is your context:
 
 --- memory/index.md ---
