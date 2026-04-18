@@ -63,6 +63,8 @@ notes_md = read_file(os.path.join(workdir, "notes.md"))
 tasks_json = read_file(os.path.join(workdir, "tasks.json"), "[]")
 progress = tail_file(os.path.join(workdir, "memory/progress.txt"))
 memory_md = read_file(os.path.join(workdir, "memory/index.md"))
+catalog_md = read_file(os.path.join(workdir, "memory/project-catalog.md"), "")
+catalog_section = f"\n--- memory/project-catalog.md ---\n{catalog_md}\n" if catalog_md else ""
 
 prompt = f"""You are an autonomous planning agent working in {workdir}. Today is {today}.
 
@@ -82,7 +84,7 @@ Your job is to review context, generate tasks if the queue is short, self-update
 
 --- memory/index.md ---
 {memory_md}
-
+{catalog_section}
 --- projects/ (top-level directories) ---
 {projects_list}
 

@@ -54,6 +54,8 @@ RawrBot operates automatically, but you can also trigger operations manually wit
 | 👀 Review and approve staged plans | `/rawr-run-auditor`          |
 | 🤖 Trigger the planner manually    | `/rawr-run-planner`          |
 | ▶️ Execute a task manually         | `/rawr-run-worker [task-id]` |
+| 🔍 Scan/fingerprint a project      | `/rawr-run-scanner <slug>`   |
+| 🗂️ Rebuild full project catalog    | `/rawr-run-scanner --backfill` |
 | 📊 Check system status             | `/rawr-status`               |
 | 📝 Generate a project README       | `/rawr-create-readme`        |
 | 🔧 First-time workspace setup      | `/rawr-setup`                |

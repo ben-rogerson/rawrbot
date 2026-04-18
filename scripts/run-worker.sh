@@ -97,6 +97,7 @@ prompt = f"""You are an autonomous agent working in {workdir}. Here is your cont
     - ## Future Improvements — short paragraph
     - ## Tech — bullet list of key technologies
     Rules: plain language, no buzzwords, short and scannable, no badges or decorative elements.
+5c. If the task created or significantly modified a project directory (new project, deployment, feature addition, README update), output <scanner>PROJECT:<project-folder-name></scanner> after completing all other steps.
 6. Append to progress.txt: task completed, key decisions, files changed, blockers. Be concise. Sacrifice grammar for concision.
 7. Append to {memory_file}: session summary, key decisions, what to carry forward tomorrow.
 8. If any long-term facts emerged (new project, key decision, user preference), update memory/index.md.
@@ -131,6 +132,21 @@ if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then
 fi
 
 echo "run-worker: task executed"
+
+SCANNER_SLUGS=$(python3 -c "
+import sys, re
+seen = set()
+for m in re.findall(r'<scanner>PROJECT:([^<]+)</scanner>', sys.stdin.read()):
+    s = m.strip()
+    if s and s not in seen:
+        seen.add(s)
+        print(s)
+" <<< "$OUTPUT" || true)
+while IFS= read -r SCANNER_SLUG; do
+  [ -z "$SCANNER_SLUG" ] && continue
+  echo "run-worker: project change detected ($SCANNER_SLUG), running scanner..."
+  bash "${SCRIPT_DIR}/run-scanner.sh" "$SCANNER_SLUG" || echo "run-worker: scanner failed (non-fatal)"
+done <<< "$SCANNER_SLUGS"
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
   MSG=$(grep -v '^$' "${WORKDIR}/memory/progress.txt" | tail -1)

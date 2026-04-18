@@ -51,10 +51,8 @@ if os.path.exists(catalog_path):
             catalog = json.load(f)
         catalog_context = json.dumps(catalog, indent=2)
         is_new = project_slug not in [p["slug"] for p in catalog.get("projects", [])]
-    except (json.JSONDecodeError, KeyError):
-        pass
-else:
-    catalog_context = read_file(os.path.join(workdir, "memory", "index.md"))
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"run-scanner: warning: could not parse project-catalog.json: {e}", file=sys.stderr, flush=True)
 
 mode = "NEW PROJECT" if is_new else "EXISTING PROJECT UPDATE"
 action = "added" if is_new else "updated"
@@ -141,14 +139,19 @@ Read memory/project-catalog.json if it exists.
 - If it exists: update the "{project_slug}" entry (add if new, replace if existing). Preserve all other project entries exactly.
 - If it does not exist: create a new catalog with just this project.
 
-Write the full updated catalog to memory/project-catalog.json:
+Write the full updated catalog atomically to avoid corruption on partial writes:
+1. Write to memory/project-catalog.json.tmp first
+2. Validate it parses as JSON (e.g. run: python3 -c "import json; json.load(open('memory/project-catalog.json.tmp'))")
+3. Only after validation succeeds, move it into place: mv memory/project-catalog.json.tmp memory/project-catalog.json
+
+Shape:
 {{
   "version": 1,
   "updatedAt": "<current ISO8601 timestamp>",
   "projects": [ ... all projects ... ]
 }}
 
-Then write memory/project-catalog.md as a compact Markdown table (all projects, sorted alphabetically by slug):
+Then write memory/project-catalog.md using the same atomic pattern (write to memory/project-catalog.md.tmp, then mv into place). Format as a compact Markdown table (all projects, sorted alphabetically by slug):
 
 ## Project Catalog (<YYYY-MM-DD>)
 
@@ -174,6 +177,7 @@ echo "run-scanner: claude finished, processing tasks..."
 
 TASK_COUNT=0
 if [ -f "$TASKS_FILE" ] && [ -s "$TASKS_FILE" ]; then
+  TASK_COUNT=$(python3 -c "import json; print(len(json.load(open('$TASKS_FILE'))))" 2>/dev/null || echo "0")
   python3 - "$TASKS_FILE" "$SCRIPT_DIR" <<'PYEOF'
 import sys, json, subprocess
 
@@ -202,7 +206,6 @@ for task in tasks:
         print(f"run-scanner: failed to queue {task.get('id', '?')}: {result.stderr}", flush=True)
 print(f"run-scanner: {count} task(s) queued", flush=True)
 PYEOF
-  TASK_COUNT=$(python3 -c "import json; print(len(json.load(open('$TASKS_FILE'))))" 2>/dev/null || echo "0")
 fi
 
 if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then

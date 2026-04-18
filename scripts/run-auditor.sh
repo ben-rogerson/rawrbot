@@ -70,6 +70,8 @@ plans_content = "\n\n---\n\n".join(plans_sections) if plans_sections else "(none
 
 goals_md = read_file(os.path.join(workdir, "goals.md"))
 tasks_json = read_file(os.path.join(workdir, "tasks.json"), "[]")
+catalog_md = read_file(os.path.join(workdir, "memory/project-catalog.md"), "")
+catalog_section = f"\n--- memory/project-catalog.md ---\n{catalog_md}\n" if catalog_md else ""
 
 if preapproved or precancelled:
     step1 = f"""STEP 1 - DECISIONS ARE PRE-SUPPLIED (skip evaluation)
@@ -103,7 +105,7 @@ Your job is to evaluate staged plan files and make a decision on each one: appro
 
 --- tasks.json (current queue) ---
 {tasks_json}
-
+{catalog_section}
 --- Staged plans ({staged_count} total) ---
 
 {plans_content}

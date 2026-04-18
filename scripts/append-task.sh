@@ -13,7 +13,11 @@ if [ "${1:-}" = "--list" ]; then
 import json, sys, os
 
 path = sys.argv[1]
-tasks = json.load(open(path)) if os.path.exists(path) else []
+if os.path.exists(path):
+    data = json.load(open(path))
+    tasks = data["tasks"] if isinstance(data, dict) else data
+else:
+    tasks = []
 pending = [t for t in tasks if not t.get('completedAt')]
 print(f"{len(pending)} pending task(s):")
 for t in pending:
@@ -28,12 +32,21 @@ import json, sys, os
 tasks_file = sys.argv[1]
 new_task = json.load(sys.stdin)
 
-tasks = json.load(open(tasks_file)) if os.path.exists(tasks_file) else []
-tasks.append(new_task)
+if os.path.exists(tasks_file):
+    data = json.load(open(tasks_file))
+    if isinstance(data, list):
+        envelope = {"tasks": data}
+    else:
+        envelope = data
+        envelope.pop("version", None)
+else:
+    envelope = {"tasks": []}
+
+envelope["tasks"].append(new_task)
 
 tmp = tasks_file + '.tmp'
 with open(tmp, 'w') as f:
-    json.dump(tasks, f, indent=2)
+    json.dump(envelope, f, indent=2)
     f.write('\n')
 
 # Validate
