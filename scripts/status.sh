@@ -35,7 +35,7 @@ if pending:
         tid = t.get('id', '?')
         priority = t.get('priority') or (t.get('draft') or {}).get('priority', '?')
         project = t.get('project') or (t.get('draft') or {}).get('project', '?')
-        print(f"          [{tid}] {priority} — {project}")
+        print(f"          [{tid}] {priority} - {project}")
 
 # Staged plans
 plans = sorted(glob.glob(os.path.join(repo, 'plans', '*.md')))
@@ -60,7 +60,7 @@ if os.path.exists(events_file):
                 agent = e.get('agent', '?')
                 event = e.get('event', '?')
                 detail = e.get('detail', '')
-                suffix = f" — {detail}" if detail else ""
+                suffix = f" - {detail}" if detail else ""
                 print(f"          [{time_part}] {agent}: {event}{suffix}")
             except Exception:
                 pass
