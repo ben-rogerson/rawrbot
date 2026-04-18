@@ -1,3 +1,18 @@
+---
+agent: scanner
+injected_by: scripts/run-scanner.sh
+variables:
+  WORKDIR: absolute path to working directory
+  PROJECT_SLUG: folder name of the project being scanned (under projects/)
+  README: contents of the project's README.md
+  PKG: contents of the project's package.json
+  SRC_LISTING: newline-separated directory listing of the project's src/
+  CATALOG_CONTEXT: current contents of memory/project-catalog.json (or "(not yet created)")
+  MODE: "NEW PROJECT" or "EXISTING PROJECT UPDATE"
+  ACTION: "added" (new project) or "updated" (existing) - used in the progress log line
+  TASK_INSTRUCTIONS: conditional block - "SPAWN FOLLOW-UP TASKS" (new project) or "NO TASK SPAWNING" (existing project update)
+---
+
 You are an autonomous project scanner working in <<WORKDIR>>.
 
 MODE: <<MODE>>

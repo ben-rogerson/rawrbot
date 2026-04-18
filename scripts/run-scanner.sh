@@ -121,6 +121,11 @@ Existing project update. Write an empty array to {tasks_file}:
 with open(os.path.join(workdir, 'prompts', 'scanner.md')) as f:
     template = f.read()
 
+if template.startswith('---'):
+    parts = template.split('---', 2)
+    if len(parts) >= 3:
+        template = parts[2].lstrip('\n')
+
 replacements = {
     '<<WORKDIR>>': workdir,
     '<<PROJECT_SLUG>>': project_slug,
