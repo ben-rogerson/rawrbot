@@ -16,6 +16,7 @@ Your job is to evaluate staged plan files and make a decision on each one: appro
 
 Follow these steps exactly:
 
+<!-- <<STEP1>> is a conditional block: either "DECISIONS ARE PRE-SUPPLIED" (--approve/--cancel flags passed) or "EVALUATE EACH PLAN" (default mode) -->
 <<STEP1>>
 
 STEP 2 - ENHANCE AND PRIORITISE APPROVED PLANS

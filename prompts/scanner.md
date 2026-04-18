@@ -55,6 +55,7 @@ Then write memory/project-catalog.md using the same atomic pattern (write to mem
 |---|---|---|---|---|---|
 | <slug> | <domain> | <comma-separated features> | <comma-separated tech> | <ai> | yes/no |
 
+<!-- STEP 3 is injected here via <<TASK_INSTRUCTIONS>> - either "SPAWN FOLLOW-UP TASKS" (new project) or "NO TASK SPAWNING" (existing project update) -->
 <<TASK_INSTRUCTIONS>>
 
 STEP 4 - LOG TO PROGRESS
