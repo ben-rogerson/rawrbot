@@ -10,9 +10,12 @@ MEMORY_FILE="memory/${TODAY}.md"
 
 log_event() {
   local agent="$1" event="$2" detail="${3:-}"
+  RAWR_AGENT="$agent" RAWR_EVENT="$event" RAWR_DETAIL="$detail" \
   python3 -c "
-import json, datetime
-entry = {'ts': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'), 'agent': '$agent', 'event': '$event', 'detail': '$detail'}
+import json, datetime, os
+entry = {'ts': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+         'agent': os.environ['RAWR_AGENT'], 'event': os.environ['RAWR_EVENT'],
+         'detail': os.environ.get('RAWR_DETAIL', '')}
 with open('${WORKDIR}/rawr-events.log', 'a') as f:
     f.write(json.dumps(entry) + '\n')
 "
