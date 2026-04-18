@@ -18,6 +18,22 @@ PROMPT_FILE=$(mktemp)
 TASKS_FILE="/tmp/scanner-tasks-${PROJECT_SLUG}.json"
 trap 'rm -f "$PROMPT_FILE" "$TASKS_FILE"' EXIT
 
+log_event() {
+  local agent="$1" event="$2" detail="${3:-}"
+  RAWR_AGENT="$agent" RAWR_EVENT="$event" RAWR_DETAIL="$detail" \
+  python3 -c "
+import json, datetime, os
+entry = {'ts': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+         'agent': os.environ['RAWR_AGENT'], 'event': os.environ['RAWR_EVENT'],
+         'detail': os.environ.get('RAWR_DETAIL', '')}
+with open('${WORKDIR}/rawr-events.log', 'a') as f:
+    f.write(json.dumps(entry) + '\n')
+"
+}
+
+CATALOG_PATH="${WORKDIR}/memory/project-catalog.json"
+CATALOG_MTIME_BEFORE=$(python3 -c "import os; print(os.path.getmtime('$CATALOG_PATH'))" 2>/dev/null || echo "0")
+
 python3 - "$WORKDIR" "$PROJECT_SLUG" "$PROJECT_PATH" "$PROMPT_FILE" "$TASKS_FILE" <<'PYEOF'
 import sys, os, json
 from datetime import datetime, timezone
@@ -102,78 +118,42 @@ Existing project update. Write an empty array to {tasks_file}:
 []
 """
 
-prompt = f"""You are an autonomous project scanner working in {workdir}.
+with open(os.path.join(workdir, 'prompts', 'scanner.md')) as f:
+    template = f.read()
 
-MODE: {mode}
-PROJECT: {project_slug}
+replacements = {
+    '<<WORKDIR>>': workdir,
+    '<<PROJECT_SLUG>>': project_slug,
+    '<<README>>': readme,
+    '<<PKG>>': pkg,
+    '<<SRC_LISTING>>': src_listing,
+    '<<CATALOG_CONTEXT>>': catalog_context,
+    '<<MODE>>': mode,
+    '<<ACTION>>': action,
+    '<<TASK_INSTRUCTIONS>>': task_instructions,
+}
+for placeholder, value in replacements.items():
+    template = template.replace(placeholder, value)
 
---- Project README.md ---
-{readme}
-
---- Project package.json ---
-{pkg}
-
---- Project src/ listing ---
-{src_listing}
-
---- Existing project catalog ---
-{catalog_context}
-
----
-
-Follow these steps exactly:
-
-STEP 1 - BUILD FINGERPRINT
-Create a fingerprint for {project_slug}:
-- slug: "{project_slug}"
-- domain: <primary domain, e.g. "personal productivity / journaling">
-- purpose: <one sentence describing what it does>
-- keyFeatures: [<3-5 key features as strings>]
-- techPatterns: [<framework, router, db, styling, etc. as strings>]
-- aiIntegration: <AI model/SDK used, or "none">
-- deployed: <true if a live URL is evident from the README, else false>
-- deployedUrl: <URL string if deployed, else null>
-
-STEP 2 - UPDATE CATALOG FILES
-Read memory/project-catalog.json if it exists.
-- If it exists: update the "{project_slug}" entry (add if new, replace if existing). Preserve all other project entries exactly.
-- If it does not exist: create a new catalog with just this project.
-
-Write the full updated catalog atomically to avoid corruption on partial writes:
-1. Write to memory/project-catalog.json.tmp first
-2. Validate it parses as JSON (e.g. run: python3 -c "import json; json.load(open('memory/project-catalog.json.tmp'))")
-3. Only after validation succeeds, move it into place: mv memory/project-catalog.json.tmp memory/project-catalog.json
-
-Shape:
-{{
-  "version": 1,
-  "updatedAt": "<current ISO8601 timestamp>",
-  "projects": [ ... all projects ... ]
-}}
-
-Then write memory/project-catalog.md using the same atomic pattern (write to memory/project-catalog.md.tmp, then mv into place). Format as a compact Markdown table (all projects, sorted alphabetically by slug):
-
-## Project Catalog (<YYYY-MM-DD>)
-
-| Slug | Domain | Key Features | Tech Patterns | AI | Deployed |
-|---|---|---|---|---|---|
-| <slug> | <domain> | <comma-separated features> | <comma-separated tech> | <ai> | yes/no |
-
-{task_instructions}
-
-STEP 4 - LOG TO PROGRESS
-Append a single concise line to memory/progress.txt:
-scanner: {project_slug} fingerprint {action} — <brief summary>"""
-
-with open(prompt_file, "w") as f:
-    f.write(prompt)
+with open(prompt_file, 'w') as f:
+    f.write(template)
 PYEOF
 
 cd "${WORKDIR}"
 echo "run-scanner: starting for '$PROJECT_SLUG' ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-scanner: calling claude..."
+log_event "scanner" "start" "$PROJECT_SLUG"
 claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
 echo "run-scanner: claude finished, processing tasks..."
+
+# Handoff validation: verify catalog was updated
+CATALOG_MTIME_AFTER=$(python3 -c "import os; print(os.path.getmtime('$CATALOG_PATH'))" 2>/dev/null || echo "0")
+if [ "$CATALOG_MTIME_AFTER" = "$CATALOG_MTIME_BEFORE" ]; then
+  log_event "scanner" "error" "catalog not updated for $PROJECT_SLUG"
+  echo "run-scanner: WARNING: project-catalog.json was not modified" >&2
+else
+  log_event "scanner" "success" "$PROJECT_SLUG fingerprint updated"
+fi
 
 TASK_COUNT=0
 if [ -f "$TASKS_FILE" ] && [ -s "$TASKS_FILE" ]; then
