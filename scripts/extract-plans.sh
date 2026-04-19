@@ -98,7 +98,7 @@ for slug in slugs:
     plan = parse_plan(slug)
     tasks.append(plan)
     added.append(slug)
-    print(f"[extract-plans] Queued {slug} (project {plan['project']})")
+    print(f"[extract-plans] Queued {slug} (project {plan['draft']['project']})")
 
 # Safe write
 with open(tasks_tmp, "w") as f:
