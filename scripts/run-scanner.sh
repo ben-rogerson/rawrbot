@@ -5,6 +5,7 @@ PROJECT_SLUG="${1:?Usage: run-scanner.sh <project-slug>}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/../.env" ] && source "${SCRIPT_DIR}/../.env"
+source "${SCRIPT_DIR}/claude-run.sh"
 WORKDIR="${WORKDIR:?WORKDIR must be set in .env}"
 
 PROJECT_PATH="${WORKDIR}/projects/${PROJECT_SLUG}"
@@ -148,7 +149,7 @@ cd "${WORKDIR}"
 echo "run-scanner: starting for '$PROJECT_SLUG' ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-scanner: calling claude..."
 log_event "scanner" "start" "$PROJECT_SLUG"
-claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
+run_claude "$PROMPT_FILE"
 echo "run-scanner: claude finished, processing tasks..."
 
 # Handoff validation: verify catalog was updated

@@ -3,6 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/../.env" ] && source "${SCRIPT_DIR}/../.env"
+source "${SCRIPT_DIR}/claude-run.sh"
 WORKDIR="${WORKDIR:?WORKDIR must be set in .env}"
 TASK_ID="${1:-}"
 TODAY=$(date +%Y-%m-%d)
@@ -111,8 +112,13 @@ echo "run-worker: starting ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-worker: calling claude (task execution may take several minutes)..."
 TARGET="${TASK_ID:-auto}"
 log_event "worker" "start" "targeting task $TARGET"
-claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")" | tee "$TMPOUT"
+run_claude "$PROMPT_FILE" "$TMPOUT" || CLAUDE_RC=$?
 OUTPUT=$(cat "$TMPOUT")
+if [ "${CLAUDE_RC:-0}" = "124" ]; then
+  log_event "worker" "error" "claude timed out after ${CLAUDE_TIMEOUT:-7200}s"
+  echo "run-worker: ERROR: claude timed out" >&2
+  exit 1
+fi
 echo "run-worker: claude finished, processing result..."
 
 # Task ID not found - list pending tasks as a hint

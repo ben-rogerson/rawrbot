@@ -18,6 +18,7 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/../.env" ] && source "${SCRIPT_DIR}/../.env"
+source "${SCRIPT_DIR}/claude-run.sh"
 WORKDIR="${WORKDIR:?WORKDIR must be set in .env}"
 TODAY=$(date +%Y-%m-%d)
 MEMORY_FILE="memory/${TODAY}.md"
@@ -140,7 +141,7 @@ cd "${WORKDIR}"
 echo "run-auditor: starting ($(date '+%Y-%m-%d %H:%M')) - ${STAGED_COUNT} staged plan(s)"
 echo "run-auditor: calling claude to evaluate plans (may take 2-3 minutes)..."
 log_event "auditor" "start" "$STAGED_COUNT staged plan(s)"
-claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
+run_claude "$PROMPT_FILE"
 echo "run-auditor: evaluation complete, processing decisions..."
 
 if [ ! -s "$DECISIONS_FILE" ]; then

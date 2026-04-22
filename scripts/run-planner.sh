@@ -6,6 +6,7 @@ MAX_PENDING_TASKS=20
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/../.env" ] && source "${SCRIPT_DIR}/../.env"
+source "${SCRIPT_DIR}/claude-run.sh"
 WORKDIR="${WORKDIR:?WORKDIR must be set in .env}"
 TODAY=$(date +%Y-%m-%d)
 MEMORY_FILE="memory/${TODAY}.md"
@@ -124,7 +125,7 @@ cd "${WORKDIR}"
 echo "run-planner: starting ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-planner: calling claude (planning may take 1-2 minutes)..."
 log_event "planner" "start" "pending=$PENDING_COUNT initial_plans=$INITIAL_PLAN_COUNT"
-claude --dangerously-skip-permissions -p "$(cat "$PROMPT_FILE")"
+run_claude "$PROMPT_FILE"
 
 # Handoff validation
 FINAL_PLAN_COUNT=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | wc -l | tr -d ' ' || echo "0")
