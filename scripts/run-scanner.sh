@@ -119,7 +119,7 @@ Existing project update. Write an empty array to {tasks_file}:
 []
 """
 
-with open(os.path.join(workdir, 'prompts', 'scanner.yaml')) as f:
+with open(os.path.join(workdir, 'prompts', 'scanner.md')) as f:
     template = f.read()
 
 if template.startswith('---'):

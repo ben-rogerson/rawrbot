@@ -110,7 +110,7 @@ Assign each plan ONE decision:
 
 Be conservative: when in doubt prefer HOLD over APPROVE or CANCEL."""
 
-with open(os.path.join(workdir, 'prompts', 'auditor.yaml')) as f:
+with open(os.path.join(workdir, 'prompts', 'auditor.md')) as f:
     template = f.read()
 
 if template.startswith('---'):
