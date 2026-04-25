@@ -1,5 +1,4 @@
 ---
-name: rawr-setup
 description: Use when setting up this autonomous agent workspace for the first time - creates missing config files, initialises the task queue, and installs launchd agents.
 ---
 
@@ -98,7 +97,7 @@ If `memory/index.md` is missing, create it with a header comment:
 # Memory Index
 
 <!-- The agent maintains this index. Each entry links to a dated file in memory/. -->
-<!-- Example: - [memory/2026-03-23.md](memory/2026-03-23.md) — first session, bootstrapped workspace -->
+<!-- Example: - [memory/2026-03-23.md](memory/2026-03-23.md) - first session, bootstrapped workspace -->
 ```
 
 ### 7. Install launchd agents
@@ -123,5 +122,5 @@ Print a checklist of what was created/skipped, and remind the user:
 
 - Edit `goals.md` to describe what they want built
 - Add ideas to `notes.md` to guide the tasks the agent will generate
-- Use the `/rawr-run-planner` skill in Claude Code to generate tasks
+- Use the `/rawr-run-planner` command in Claude Code to generate tasks
 - Use the `/rawr-add-task` skill in Claude Code to queue tasks

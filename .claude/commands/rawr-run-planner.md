@@ -1,5 +1,4 @@
 ---
-name: rawr-run-planner
 description: Manually run the planning agent - generate plan files in plans/ for review and update goals.md.
 ---
 

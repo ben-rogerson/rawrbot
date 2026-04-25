@@ -1,6 +1,6 @@
 ---
-name: rawr-run-worker
 description: Manually run the task execution agent - pick the highest priority task from tasks.json and execute it. Optionally pass a task ID to target a specific task, skipping the queue.
+argument-hint: "[task-id]"
 ---
 
 # Run Task
@@ -10,7 +10,7 @@ description: Manually run the task execution agent - pick the highest priority t
 1. Run the script **in the background** (`run_in_background: true`):
 
    ```bash
-   REPO=$(git rev-parse --show-toplevel); . ~/.zshrc 2>/dev/null; "$REPO/scripts/run-worker.sh" ${ARGUMENTS} 2>&1 | tee -a "$REPO/rawr.log"
+   REPO=$(git rev-parse --show-toplevel); . ~/.zshrc 2>/dev/null; "$REPO/scripts/run-worker.sh" $ARGUMENTS 2>&1 | tee -a "$REPO/rawr.log"
    ```
 
 2. Start a Monitor watching rawr.log for worker progress lines:

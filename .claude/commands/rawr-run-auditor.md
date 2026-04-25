@@ -1,5 +1,4 @@
 ---
-name: rawr-run-auditor
 description: Manually run the auditor - review staged plans in plans/ and approve or cancel them into tasks.json.
 ---
 

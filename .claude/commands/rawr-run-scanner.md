@@ -1,6 +1,6 @@
 ---
-name: rawr-run-scanner
 description: Manually run the project scanner - fingerprint a project and update the catalog, or backfill all projects at once.
+argument-hint: "<slug> | --backfill"
 ---
 
 # Run Scanner
@@ -13,10 +13,10 @@ Fingerprints a project (domain, features, tech patterns, deployment) and updates
 
    **Single project:**
    ```bash
-   REPO=$(git rev-parse --show-toplevel); . ~/.zshrc 2>/dev/null; "$REPO/scripts/run-scanner.sh" ${ARGUMENTS} 2>&1 | tee -a "$REPO/rawr.log"
+   REPO=$(git rev-parse --show-toplevel); . ~/.zshrc 2>/dev/null; "$REPO/scripts/run-scanner.sh" $ARGUMENTS 2>&1 | tee -a "$REPO/rawr.log"
    ```
 
-   **Backfill all projects (no ARGUMENTS):**
+   **Backfill all projects (no arguments):**
    ```bash
    REPO=$(git rev-parse --show-toplevel); . ~/.zshrc 2>/dev/null; "$REPO/scripts/run-scanner-backfill.sh" 2>&1 | tee -a "$REPO/rawr.log"
    ```
@@ -37,5 +37,5 @@ Fingerprints a project (domain, features, tech patterns, deployment) and updates
 
 ## Usage
 
-- `/rawr-run-scanner <slug>` — fingerprint a single project by folder name (e.g. `coffee-log`)
-- `/rawr-run-scanner --backfill` — regenerate the full catalog from all projects in one Claude call
+- `/rawr-run-scanner <slug>` - fingerprint a single project by folder name (e.g. `coffee-log`)
+- `/rawr-run-scanner --backfill` - regenerate the full catalog from all projects in one Claude call
