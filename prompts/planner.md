@@ -21,26 +21,33 @@ You are an autonomous planning agent working in <<WORKDIR>>. Today is <<TODAY>>.
 
 Your job is to review context, generate tasks if the queue is short, self-update your goals document, and write a morning plan summary. You do NOT execute tasks - you only plan.
 
---- goals.md ---
+<goals>
 <<GOALS_MD>>
+</goals>
 
---- notes.md ---
+<notes>
 <<NOTES_MD>>
+</notes>
 
---- tasks.json ---
+<tasks_json>
 <<TASKS_JSON>>
+</tasks_json>
 
---- memory/progress.txt (last 100 lines) ---
+<progress lines="100">
 <<PROGRESS>>
+</progress>
 
---- memory/index.md ---
+<memory_index>
 <<MEMORY_MD>>
+</memory_index>
 <<CATALOG_SECTION>>
---- projects/ (top-level directories) ---
+<projects_list>
 <<PROJECTS_LIST>>
+</projects_list>
 
---- plans/ (existing staged plans - avoid name clashes) ---
+<existing_plans>
 <<EXISTING_PLANS>>
+</existing_plans>
 
 ---
 

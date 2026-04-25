@@ -13,17 +13,21 @@ variables:
 
 You are an autonomous agent working in <<WORKDIR>>. Here is your context:
 
---- memory/index.md ---
+<memory_index>
 <<MEMORY_MD>>
+</memory_index>
 
---- <<MEMORY_FILE>> ---
+<daily_memory file="<<MEMORY_FILE>>">
 <<DAILY_MEMORY>>
+</daily_memory>
 
---- tasks.json ---
+<tasks_json>
 <<TASKS_JSON>>
+</tasks_json>
 
---- memory/progress.txt (last 50 lines) ---
+<progress lines="50">
 <<PROGRESS>>
+</progress>
 
 ---
 

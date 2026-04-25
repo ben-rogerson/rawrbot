@@ -18,17 +18,21 @@ You are an autonomous project scanner working in <<WORKDIR>>.
 MODE: <<MODE>>
 PROJECT: <<PROJECT_SLUG>>
 
---- Project README.md ---
+<project_readme>
 <<README>>
+</project_readme>
 
---- Project package.json ---
+<project_package_json>
 <<PKG>>
+</project_package_json>
 
---- Project src/ listing ---
+<project_src_listing>
 <<SRC_LISTING>>
+</project_src_listing>
 
---- Existing project catalog ---
+<existing_catalog>
 <<CATALOG_CONTEXT>>
+</existing_catalog>
 
 ---
 

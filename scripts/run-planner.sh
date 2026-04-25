@@ -89,7 +89,7 @@ tasks_json = read_file(os.path.join(workdir, "tasks.json"), "[]")
 progress = tail_file(os.path.join(workdir, "memory/progress.txt"))
 memory_md = read_file(os.path.join(workdir, "memory/index.md"))
 catalog_md = read_file(os.path.join(workdir, "memory/project-catalog.md"), "")
-catalog_section = f"\n--- memory/project-catalog.md ---\n{catalog_md}\n" if catalog_md else ""
+catalog_section = f"\n<project_catalog>\n{catalog_md}\n</project_catalog>\n" if catalog_md else ""
 
 with open(os.path.join(workdir, 'prompts', 'planner.md')) as f:
     template = f.read()

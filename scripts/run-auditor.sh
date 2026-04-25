@@ -85,7 +85,7 @@ plans_content = "\n\n---\n\n".join(plans_sections) if plans_sections else "(none
 goals_md = read_file(os.path.join(workdir, "goals.md"))
 tasks_json = read_file(os.path.join(workdir, "tasks.json"), "[]")
 catalog_md = read_file(os.path.join(workdir, "memory/project-catalog.md"), "")
-catalog_section = f"\n--- memory/project-catalog.md ---\n{catalog_md}\n" if catalog_md else ""
+catalog_section = f"\n<project_catalog>\n{catalog_md}\n</project_catalog>\n" if catalog_md else ""
 
 if preapproved or precancelled:
     step1 = f"""STEP 1 - DECISIONS ARE PRE-SUPPLIED (skip evaluation)
