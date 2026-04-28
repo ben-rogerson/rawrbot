@@ -2,6 +2,8 @@
 telegram.log
 rawr-events.log
 rawr.log
+logs/
+progress.txt
 
 # Personal files
 goals.md

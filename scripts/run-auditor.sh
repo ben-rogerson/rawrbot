@@ -49,6 +49,10 @@ if [ "$STAGED_COUNT" -eq 0 ]; then
   exit 0
 fi
 
+TS=$(date +%Y%m%dT%H%M%SZ)
+LOG_FILE="${WORKDIR}/logs/auditor-${TS}.jsonl"
+mkdir -p "${WORKDIR}/logs"
+
 # Build prompt via python to avoid shell quoting issues
 PROMPT_FILE=$(mktemp)
 DECISIONS_FILE=$(mktemp)
@@ -141,8 +145,8 @@ cd "${WORKDIR}"
 echo "run-auditor: starting ($(date '+%Y-%m-%d %H:%M')) - ${STAGED_COUNT} staged plan(s)"
 echo "run-auditor: calling claude to evaluate plans (may take 2-3 minutes)..."
 log_event "auditor" "start" "$STAGED_COUNT staged plan(s)"
-run_claude "$PROMPT_FILE"
-echo "run-auditor: evaluation complete, processing decisions..."
+run_claude "$PROMPT_FILE" "$LOG_FILE"
+echo "run-auditor: claude finished (log: $LOG_FILE), processing decisions..."
 
 if [ ! -s "$DECISIONS_FILE" ]; then
   log_event "auditor" "error" "decisions file not written or empty"

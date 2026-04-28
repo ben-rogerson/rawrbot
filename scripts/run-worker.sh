@@ -36,10 +36,13 @@ except Exception:
 mkdir -p "${WORKDIR}/memory"
 touch "${WORKDIR}/${MEMORY_FILE}"
 
+TS=$(date +%Y%m%dT%H%M%SZ)
+LOG_FILE="${WORKDIR}/logs/worker-${TS}.jsonl"
+mkdir -p "${WORKDIR}/logs"
+
 # Build prompt via python to avoid shell quoting issues with file contents
 PROMPT_FILE=$(mktemp)
-TMPOUT=$(mktemp)
-trap 'rm -f "$PROMPT_FILE" "$TMPOUT"' EXIT
+trap 'rm -f "$PROMPT_FILE"' EXIT
 
 python3 - "$WORKDIR" "$MEMORY_FILE" "$PROMPT_FILE" "$TASK_ID" <<'PYEOF'
 import sys, os
@@ -112,14 +115,36 @@ echo "run-worker: starting ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-worker: calling claude (task execution may take several minutes)..."
 TARGET="${TASK_ID:-auto}"
 log_event "worker" "start" "targeting task $TARGET"
-run_claude "$PROMPT_FILE" "$TMPOUT" || CLAUDE_RC=$?
-OUTPUT=$(cat "$TMPOUT")
+run_claude "$PROMPT_FILE" "$LOG_FILE" || CLAUDE_RC=$?
 if [ "${CLAUDE_RC:-0}" = "124" ]; then
   log_event "worker" "error" "claude timed out after ${CLAUDE_TIMEOUT:-7200}s"
-  echo "run-worker: ERROR: claude timed out" >&2
+  echo "run-worker: ERROR: claude timed out (log: $LOG_FILE)" >&2
   exit 1
 fi
-echo "run-worker: claude finished, processing result..."
+echo "run-worker: claude finished (log: $LOG_FILE), processing result..."
+
+OUTPUT=$(python3 - "$LOG_FILE" <<'PYEOF'
+import json, sys
+log_file = sys.argv[1]
+result_text = ''
+asst_text = ''
+try:
+    for line in open(log_file):
+        try:
+            e = json.loads(line)
+        except Exception:
+            continue
+        if e.get('type') == 'result':
+            result_text = e.get('result', '') or ''
+        elif e.get('type') == 'assistant':
+            for block in (e.get('message', {}) or {}).get('content', []) or []:
+                if block.get('type') == 'text':
+                    asst_text += block.get('text', '')
+except FileNotFoundError:
+    pass
+print(result_text or asst_text)
+PYEOF
+)
 
 # Task ID not found - list pending tasks as a hint
 if echo "$OUTPUT" | grep -q '<promise>NOT_FOUND</promise>'; then

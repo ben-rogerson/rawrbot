@@ -37,13 +37,14 @@ def delete_old(pattern, days, label):
             deleted += 1
     print(f"cleanup: {label} - deleted {deleted} of {len(paths)} files older than {days}d")
 
-trim_file(os.path.join(repo, 'rawr.log'), 1000)
 trim_file(os.path.join(repo, 'rawr-events.log'), 500)
 trim_file(os.path.join(repo, 'memory', 'progress.txt'), 200)
 
 delete_old(os.path.join(repo, 'memory', '????-??-??.md'), 14, 'daily memory files')
 delete_old(os.path.join(repo, 'plans', 'approved', '*.md'), 30, 'approved plans')
 delete_old(os.path.join(repo, 'plans', 'cancelled', '*.md'), 30, 'cancelled plans')
+delete_old(os.path.join(repo, 'logs', '*.jsonl'), 14, 'agent run logs')
+delete_old(os.path.join(repo, 'logs', '*.prompt.txt'), 14, 'agent run prompts')
 
 # Log completion event
 entry = {

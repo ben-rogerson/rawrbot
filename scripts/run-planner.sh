@@ -52,6 +52,10 @@ except Exception:
     print(0)
 " 2>/dev/null || echo "0")
 
+TS=$(date +%Y%m%dT%H%M%SZ)
+LOG_FILE="${WORKDIR}/logs/planner-${TS}.jsonl"
+mkdir -p "${WORKDIR}/logs"
+
 # Build prompt via python to avoid shell quoting issues with file contents
 PROMPT_FILE=$(mktemp)
 trap 'rm -f "$PROMPT_FILE"' EXIT
@@ -125,7 +129,8 @@ cd "${WORKDIR}"
 echo "run-planner: starting ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-planner: calling claude (planning may take 1-2 minutes)..."
 log_event "planner" "start" "pending=$PENDING_COUNT initial_plans=$INITIAL_PLAN_COUNT"
-run_claude "$PROMPT_FILE"
+run_claude "$PROMPT_FILE" "$LOG_FILE"
+echo "run-planner: claude finished (log: $LOG_FILE)"
 
 # Handoff validation
 FINAL_PLAN_COUNT=$(ls "${WORKDIR}/plans"/*.md 2>/dev/null | wc -l | tr -d ' ' || echo "0")

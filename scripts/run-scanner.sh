@@ -15,6 +15,10 @@ if [ ! -d "$PROJECT_PATH" ]; then
   exit 1
 fi
 
+TS=$(date +%Y%m%dT%H%M%SZ)
+LOG_FILE="${WORKDIR}/logs/scanner-${PROJECT_SLUG}-${TS}.jsonl"
+mkdir -p "${WORKDIR}/logs"
+
 PROMPT_FILE=$(mktemp)
 TASKS_FILE="/tmp/scanner-tasks-${PROJECT_SLUG}.json"
 trap 'rm -f "$PROMPT_FILE" "$TASKS_FILE"' EXIT
@@ -149,8 +153,8 @@ cd "${WORKDIR}"
 echo "run-scanner: starting for '$PROJECT_SLUG' ($(date '+%Y-%m-%d %H:%M'))"
 echo "run-scanner: calling claude..."
 log_event "scanner" "start" "$PROJECT_SLUG"
-run_claude "$PROMPT_FILE"
-echo "run-scanner: claude finished, processing tasks..."
+run_claude "$PROMPT_FILE" "$LOG_FILE"
+echo "run-scanner: claude finished (log: $LOG_FILE), processing tasks..."
 
 # Handoff validation: verify catalog was updated
 CATALOG_MTIME_AFTER=$(python3 -c "import os; print(os.path.getmtime('$CATALOG_PATH'))" 2>/dev/null || echo "0")
